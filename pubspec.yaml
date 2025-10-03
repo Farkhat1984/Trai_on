@@ -1,0 +1,88 @@
+name: virtual_try_on
+description: A virtual fitting room app with AI-powered try-on features
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Design
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+  flutter_animate: ^4.5.0
+  shimmer: ^3.0.0
+  lottie: ^3.0.0
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+
+  # Image Handling
+  image_picker: ^1.1.2
+  cached_network_image: ^3.4.1
+  flutter_image_compress: ^2.3.0
+
+  # Storage
+  shared_preferences: ^2.3.4
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.5
+
+  # Network
+  http: ^1.2.2
+  dio: ^5.7.0
+
+  # Camera
+  camera: ^0.11.2
+
+  # Drag & Drop
+  flutter_reorderable_list: ^1.3.1
+
+  # Sharing
+  share_plus: ^12.0.0
+  gal: ^2.3.0
+
+  # Permissions
+  permission_handler: ^12.0.1
+
+  # Utils
+  uuid: ^4.5.1
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.3
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.13
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/animations/
+    - assets/icons/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/Trai_on.png"  # Исправлено имя файла
+  # Для Android Adaptive Icons (Android 8.0+)
+  adaptive_icon_background: "#FFFFFF"  # Белый фон вместо прозрачности
+  adaptive_icon_foreground: "assets/icons/Trai_on.png"
+  # Убираем прозрачность для обычной иконки
+  remove_alpha_ios: false
+  # Для старых версий Android (без adaptive icon)
+  min_sdk_android: 21
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/icons/Trai_on.png
+  android: true
+  ios: true
