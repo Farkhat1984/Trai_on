@@ -8,7 +8,12 @@
       "Bash(flutter build:*)",
       "Bash(flutter:*)",
       "Bash(.gradlew.bat clean)",
-      "Bash(cmd /c gradlew.bat clean:*)"
+      "Bash(cmd /c gradlew.bat clean:*)",
+      "Bash(mkdir:*)",
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(curl:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []
