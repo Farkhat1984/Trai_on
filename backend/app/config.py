@@ -59,7 +59,7 @@ class Settings(BaseSettings):
     DEFAULT_REFUND_PERIOD_DAYS: int = 14
 
     # CORS
-    CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:8000"]
+    CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:8000", "http://127.0.0.1:8000", "null"]
 
     # Rate limiting
     RATE_LIMIT_PER_MINUTE: str = "60/minute"

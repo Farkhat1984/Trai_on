@@ -99,7 +99,7 @@ async def get_settings(
     """Get all platform settings"""
     result = await db.execute(select(PlatformSettings))
     settings = result.scalars().all()
-    return [AdminSettings.model_validate(s) for s in settings]
+    return [AdminSettings.model_validate(s, from_attributes=True) for s in settings]
 
 
 @router.put("/settings/{key}")

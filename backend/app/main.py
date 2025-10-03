@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
 import logging
+import os
 
 from app.config import settings
 from app.database import init_db, close_db
@@ -73,13 +75,14 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# CORS middleware
+# CORS middleware - must be added BEFORE other middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=["*"],  # Allow all origins for local development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Mount static files (uploads)
@@ -97,13 +100,20 @@ app.include_router(admin.router, prefix=f"{settings.API_V1_PREFIX}/admin", tags=
 
 @app.get("/")
 async def root():
-    """Root endpoint"""
-    return {
-        "name": settings.APP_NAME,
-        "version": settings.APP_VERSION,
-        "status": "running",
-        "docs": "/docs"
-    }
+    """Root endpoint - redirect to index.html"""
+    return FileResponse("index.html")
+
+
+@app.get("/index.html")
+async def index():
+    """Serve index.html"""
+    return FileResponse("index.html")
+
+
+@app.get("/callback.html")
+async def callback():
+    """Serve callback.html"""
+    return FileResponse("callback.html")
 
 
 @app.get("/health")

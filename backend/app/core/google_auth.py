@@ -14,7 +14,7 @@ class GoogleAuth:
         self.client_secret = settings.GOOGLE_CLIENT_SECRET
         self.redirect_uri = settings.GOOGLE_REDIRECT_URI
 
-    def get_authorization_url(self) -> str:
+    def get_authorization_url(self, account_type: str = "shop") -> str:
         """Get Google OAuth authorization URL"""
         flow = Flow.from_client_config(
             {
@@ -33,42 +33,58 @@ class GoogleAuth:
             ],
         )
         flow.redirect_uri = self.redirect_uri
-        authorization_url, state = flow.authorization_url(
-            access_type="offline", include_granted_scopes="true", prompt="consent"
+
+        # Use state to pass account_type
+        import json
+        state = json.dumps({"account_type": account_type})
+
+        authorization_url, _ = flow.authorization_url(
+            access_type="offline",
+            include_granted_scopes="true",
+            prompt="consent",
+            state=state
         )
         return authorization_url
 
     async def verify_oauth_code(self, code: str) -> Optional[Dict]:
         """Exchange authorization code for user info"""
         try:
-            flow = Flow.from_client_config(
-                {
-                    "web": {
+            # Exchange code for token using httpx directly
+            async with httpx.AsyncClient() as client:
+                # Get access token
+                token_response = await client.post(
+                    "https://oauth2.googleapis.com/token",
+                    data={
+                        "code": code,
                         "client_id": self.client_id,
                         "client_secret": self.client_secret,
-                        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                        "token_uri": "https://oauth2.googleapis.com/token",
-                        "redirect_uris": [self.redirect_uri],
+                        "redirect_uri": self.redirect_uri,
+                        "grant_type": "authorization_code",
                     }
-                },
-                scopes=[
-                    "openid",
-                    "https://www.googleapis.com/auth/userinfo.email",
-                    "https://www.googleapis.com/auth/userinfo.profile",
-                ],
-            )
-            flow.redirect_uri = self.redirect_uri
-            flow.fetch_token(code=code)
-
-            credentials = flow.credentials
-
-            # Get user info
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    "https://www.googleapis.com/oauth2/v2/userinfo",
-                    headers={"Authorization": f"Bearer {credentials.token}"},
                 )
-                user_info = response.json()
+
+                if token_response.status_code != 200:
+                    print(f"Token exchange failed: {token_response.text}")
+                    return None
+
+                token_data = token_response.json()
+                access_token = token_data.get("access_token")
+
+                if not access_token:
+                    print("No access token in response")
+                    return None
+
+                # Get user info
+                user_response = await client.get(
+                    "https://www.googleapis.com/oauth2/v2/userinfo",
+                    headers={"Authorization": f"Bearer {access_token}"},
+                )
+
+                if user_response.status_code != 200:
+                    print(f"User info fetch failed: {user_response.text}")
+                    return None
+
+                user_info = user_response.json()
 
             return {
                 "google_id": user_info.get("id"),
@@ -77,7 +93,9 @@ class GoogleAuth:
                 "avatar_url": user_info.get("picture"),
             }
         except Exception as e:
+            import traceback
             print(f"Google OAuth error: {e}")
+            print(traceback.format_exc())
             return None
 
     def verify_id_token(self, token: str) -> Optional[Dict]:
