@@ -57,6 +57,30 @@ class WardrobeNotifier extends StateNotifier<List<ClothingItem>> {
     state = state.where((item) => item.id != id).toList();
   }
 
+  Future<void> updateClothingDescription(String id, String? description) async {
+    final box = Hive.box('wardrobe');
+    final item = state.firstWhere((item) => item.id == id);
+
+    await box.put(id, {
+      'id': item.id,
+      'base64Image': item.base64Image,
+      'createdAt': item.createdAt.toIso8601String(),
+      'description': description,
+    });
+
+    state = state.map((item) {
+      if (item.id == id) {
+        return ClothingItem(
+          id: item.id,
+          base64Image: item.base64Image,
+          createdAt: item.createdAt,
+          description: description,
+        );
+      }
+      return item;
+    }).toList();
+  }
+
   Future<void> clearWardrobe() async {
     final box = Hive.box('wardrobe');
     await box.clear();

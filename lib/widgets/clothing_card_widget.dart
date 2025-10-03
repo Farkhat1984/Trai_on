@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/clothing_item.dart';
+import '../providers/wardrobe_provider.dart';
 
-class ClothingCardWidget extends StatelessWidget {
+class ClothingCardWidget extends ConsumerWidget {
   final ClothingItem item;
   final VoidCallback onDoubleTap;
   final VoidCallback onDelete;
@@ -17,7 +19,7 @@ class ClothingCardWidget extends StatelessWidget {
     required this.onSave,
   });
 
-  void _showActions(BuildContext context) {
+  void _showActions(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -49,6 +51,21 @@ class ClothingCardWidget extends StatelessWidget {
                 ),
               ),
             const SizedBox(height: 16),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.edit, color: Colors.orange),
+              ),
+              title: const Text('Редактировать название'),
+              onTap: () {
+                Navigator.pop(context);
+                _showEditDialog(context, ref);
+              },
+            ),
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
@@ -102,10 +119,54 @@ class ClothingCardWidget extends StatelessWidget {
     );
   }
 
+  void _showEditDialog(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController(text: item.description ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Редактировать название'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'Введите название товара',
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+          maxLines: 1,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final newDescription = controller.text.trim();
+              ref.read(wardrobeProvider.notifier).updateClothingDescription(
+                item.id,
+                newDescription.isEmpty ? null : newDescription,
+              );
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Название обновлено'),
+                  duration: Duration(seconds: 1),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            child: const Text('Сохранить'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-      onTap: () => _showActions(context),
+      onTap: () => _showActions(context, ref),
       onDoubleTap: onDoubleTap,
       child: Card(
         elevation: 2,
@@ -117,45 +178,11 @@ class ClothingCardWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.memory(
-                    base64Decode(item.base64Image),
-                    fit: BoxFit.cover,
-                  ),
-                  // Subtle tap indicator
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Icon(
-                        Icons.more_vert,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ),
-                  ),
-                ],
+              child: Image.memory(
+                base64Decode(item.base64Image),
+                fit: BoxFit.cover,
               ),
             ),
-            if (item.description != null)
-              Container(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  item.description!,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                ),
-              ),
           ],
         ),
       ).animate().fadeIn(duration: 300.ms).scale(

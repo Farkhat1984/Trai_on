@@ -1,3 +1,7 @@
 {
-    "CodeGPT.apiKey": "Anthropic"
+    "CodeGPT.apiKey": "Anthropic",
+    "claude-code.environmentVariables": [
+        
+
+    ]
 }
