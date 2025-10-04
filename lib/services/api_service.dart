@@ -83,7 +83,7 @@ class ApiService {
         print(
             'Количество изображений: ${personBase64 != null ? 1 : 0} + ${clothingBase64 != null ? 1 : 0}');
         print(
-            'Текст промпта: ${userPrompt.length > 100 ? userPrompt.substring(0, 100) + "..." : userPrompt}');
+            'Текст промпта: ${userPrompt.length > 100 ? "${userPrompt.substring(0, 100)}..." : userPrompt}');
         final genConfig = payload['generationConfig'] as Map?;
         print('responseModalities: ${genConfig?['responseModalities']}');
         print('=======================');
@@ -137,7 +137,7 @@ class ApiService {
               (result['candidates'] as List).isEmpty) {
             print('⚠️ Пустой массив candidates');
             if (attempts < maxAttempts) {
-              print('Повтор попытки через ${delay}мс...');
+              print('Повтор попытки через $delayмс...');
               await Future.delayed(Duration(milliseconds: delay));
               delay *= 2;
               continue;
@@ -169,7 +169,7 @@ class ApiService {
           if (finishReason == 'IMAGE_OTHER') {
             print('⚠️ IMAGE_OTHER: Модель не смогла обработать изображения');
             if (attempts < maxAttempts) {
-              print('Повтор попытки через ${delay}мс...');
+              print('Повтор попытки через $delayмс...');
               await Future.delayed(Duration(milliseconds: delay));
               delay *= 2;
               continue;
@@ -221,7 +221,7 @@ class ApiService {
             print('Parts структура: ${parts.map((p) => p.keys.toList()).toList()}');
 
             if (attempts < maxAttempts) {
-              print('Повтор попытки $attempts/$maxAttempts через ${delay}мс...');
+              print('Повтор попытки $attempts/$maxAttempts через $delayмс...');
               if (textPart != null) {
                 print('⚠️ API вернул текст вместо изображения: ${textPart['text']}');
                 print('ПРИЧИНА: Скорее всего изображения слишком сложные для композиции');
