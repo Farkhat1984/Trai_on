@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/theme_provider.dart';
 import '../providers/wardrobe_provider.dart';
+import '../providers/sound_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -10,6 +11,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
+    final soundEnabled = ref.watch(soundEnabledProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -25,6 +27,14 @@ class SettingsScreen extends ConsumerWidget {
             title: 'Внешний вид',
             children: [
               _buildThemeCard(context, ref, themeMode),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSection(
+            context,
+            title: 'Звук',
+            children: [
+              _buildSoundCard(context, ref, soundEnabled),
             ],
           ),
           const SizedBox(height: 24),
@@ -120,6 +130,50 @@ class SettingsScreen extends ConsumerWidget {
               icon: Icons.brightness_auto,
               mode: ThemeMode.system,
               isSelected: currentMode == ThemeMode.system,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSoundCard(
+      BuildContext context, WidgetRef ref, bool soundEnabled) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(
+              soundEnabled ? Icons.volume_up : Icons.volume_off,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Звуковые эффекты',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    soundEnabled ? 'Включены' : 'Выключены',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: soundEnabled,
+              onChanged: (value) {
+                ref.read(soundEnabledProvider.notifier).setSoundEnabled(value);
+              },
             ),
           ],
         ),

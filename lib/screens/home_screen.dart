@@ -9,9 +9,11 @@ import '../providers/fab_state_provider.dart';
 import '../services/api_service.dart';
 import '../services/image_service.dart';
 import '../services/flying_widget_service.dart';
+import '../services/sound_service.dart';
 import '../widgets/person_display_widget.dart';
 import '../widgets/loading_overlay.dart';
 import '../widgets/try_on_animation_overlay.dart';
+import '../widgets/sound_buttons.dart';
 import '../models/clothing_item.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -434,6 +436,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           final itemKey = GlobalKey();
           return GestureDetector(
             onDoubleTap: () {
+              // Воспроизводим звук полёта
+              SoundService()
+                  .playFlying(duration: const Duration(milliseconds: 800));
+
               // Запускаем flying animation
               FlyingWidgetService.flyWidget(
                 context: context,
@@ -591,7 +597,7 @@ class _HomeFAB extends StatelessWidget {
           ),
           const SizedBox(height: 12),
         ],
-        FloatingActionButton(
+        SoundFloatingActionButton(
           onPressed: onToggleFAB,
           child: AnimatedRotation(
             turns: isFabOpen ? 0.125 : 0,
@@ -620,7 +626,7 @@ class _HomeFABButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FloatingActionButton(
+    return SoundFloatingActionButton(
       heroTag: heroTag,
       mini: true,
       backgroundColor: backgroundColor,

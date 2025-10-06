@@ -48,6 +48,9 @@ dependencies:
   # Permissions
   permission_handler: ^12.0.1
 
+  # Audio
+  just_audio: ^0.9.42
+
   # Utils
   uuid: ^4.5.1
   intl: ^0.20.2
@@ -67,6 +70,7 @@ flutter:
 
   assets:
     - assets/icons/
+    - assets/sounds/
 
 flutter_launcher_icons:
   android: true

@@ -28,30 +28,26 @@ class _TryOnAnimationOverlayState extends State<TryOnAnimationOverlay>
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1000), // Сократили с 1200 до 1000
       vsync: this,
     );
 
-    // Анимация масштаба: начинаем с 1.0, уменьшаемся до 0.3, потом до 0
+    // Анимация масштаба: начинаем с 1.0, уменьшаемся до 0.2, останавливаемся
+    // Убрали финальную фазу уменьшения до 0
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
         tween: Tween<double>(begin: 1.0, end: 0.5)
             .chain(CurveTween(curve: Curves.easeInOut)),
-        weight: 50,
+        weight: 60,
       ),
       TweenSequenceItem(
         tween: Tween<double>(begin: 0.5, end: 0.2)
             .chain(CurveTween(curve: Curves.easeIn)),
-        weight: 30,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.2, end: 0.0)
-            .chain(CurveTween(curve: Curves.easeInCubic)),
-        weight: 20,
+        weight: 40,
       ),
     ]).animate(_controller);
 
-    // Анимация позиции: летим вверх и в центр
+    // Анимация позиции: летим вверх и в центр (без финальной фазы)
     _positionAnimation = TweenSequence<Offset>([
       TweenSequenceItem(
         tween: Tween<Offset>(
@@ -63,13 +59,13 @@ class _TryOnAnimationOverlayState extends State<TryOnAnimationOverlay>
       TweenSequenceItem(
         tween: Tween<Offset>(
           begin: const Offset(0, -0.3),
-          end: const Offset(0, -0.5),
+          end: const Offset(0, -0.4),
         ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 40,
       ),
     ]).animate(_controller);
 
-    // Анимация прозрачности
+    // Анимация прозрачности: останавливаемся на 0.3 вместо 0
     _opacityAnimation = TweenSequence<double>([
       TweenSequenceItem(
         tween: Tween<double>(begin: 1.0, end: 0.8),
@@ -77,11 +73,7 @@ class _TryOnAnimationOverlayState extends State<TryOnAnimationOverlay>
       ),
       TweenSequenceItem(
         tween: Tween<double>(begin: 0.8, end: 0.3),
-        weight: 30,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.3, end: 0.0),
-        weight: 20,
+        weight: 50,
       ),
     ]).animate(_controller);
 

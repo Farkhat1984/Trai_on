@@ -10,9 +10,13 @@ import 'screens/settings_screen.dart';
 import 'providers/theme_provider.dart';
 import 'providers/navigation_provider.dart';
 import 'providers/selected_items_provider.dart';
+import 'services/sound_service.dart';
 
 // GlobalKey для иконки корзины (используется для flying animation)
 final GlobalKey cartIconKey = GlobalKey();
+
+// GlobalKey для навигационной иконки "Главная"
+final GlobalKey homeIconKey = GlobalKey();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +25,9 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('wardrobe');
   await Hive.openBox('settings');
+
+  // Initialize sound service
+  await SoundService().initialize();
 
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
@@ -166,6 +173,7 @@ class MainNavigator extends ConsumerWidget {
         },
         destinations: [
           NavigationDestination(
+            key: homeIconKey,
             icon: Badge(
               key: cartIconKey,
               label:

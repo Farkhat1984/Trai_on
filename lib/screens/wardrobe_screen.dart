@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/wardrobe_provider.dart';
 import '../services/flying_widget_service.dart';
-import '../main.dart' show cartIconKey;
+import '../main.dart' show homeIconKey;
 import '../providers/selected_items_provider.dart';
 import '../providers/fab_state_provider.dart';
 import '../services/image_service.dart';
 import '../services/api_service.dart';
+import '../services/sound_service.dart';
+import '../widgets/sound_buttons.dart';
 import '../models/clothing_item.dart';
 import '../widgets/clothing_card_widget.dart';
 import 'dart:convert' show base64Decode;
@@ -146,12 +148,15 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   }
 
   void _onItemDoubleTap(ClothingItem item, GlobalKey itemKey) {
+    // Воспроизводим звук полёта
+    SoundService().playFlying(duration: const Duration(milliseconds: 800));
+
     // Запускаем flying animation
     FlyingWidgetService.flyWidget(
       context: context,
       sourceKey: itemKey,
-      targetKey: cartIconKey,
-      targetOffset: const Offset(0, 24),
+      targetKey: homeIconKey, // Используем homeIconKey вместо cartIconKey
+      targetOffset: const Offset(0, 0), // Убираем offset для точного попадания
       imageBase64: item.base64Image,
       duration: const Duration(milliseconds: 800),
       onComplete: () {
@@ -426,7 +431,7 @@ class _WardrobeFAB extends StatelessWidget {
           ),
           const SizedBox(height: 12),
         ],
-        FloatingActionButton(
+        SoundFloatingActionButton(
           onPressed: onToggleFAB,
           child: AnimatedRotation(
             turns: isFabOpen ? 0.125 : 0,
@@ -455,7 +460,7 @@ class _FABButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FloatingActionButton(
+    return SoundFloatingActionButton(
       heroTag: heroTag,
       mini: true,
       backgroundColor: backgroundColor,
