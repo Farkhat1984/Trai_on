@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,7 +29,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _modelKey = GlobalKey(); // Key для виджета модели
 
   bool _isProcessing = false;
-  String? _animatingClothingBase64;
+  String? _celebrationClothingBase64;
+  Completer<void>? _celebrationCompleter;
 
   @override
   void dispose() {
@@ -198,14 +200,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return;
     }
 
-    // Показываем анимацию взлёта
-    setState(() => _animatingClothingBase64 = clothingBase64);
+    // Отображаем эффект "салюта" после полёта
+    if (_celebrationCompleter != null &&
+        !(_celebrationCompleter!.isCompleted)) {
+      _celebrationCompleter!.complete();
+    }
 
-    // Ждём завершения анимации перед началом обработки
-    await Future.delayed(const Duration(milliseconds: 1200));
+    final overlayCompleter = Completer<void>();
 
     setState(() {
-      _animatingClothingBase64 = null;
+      _celebrationClothingBase64 = clothingBase64;
+      _celebrationCompleter = overlayCompleter;
+    });
+
+    // Ждём завершения эффекта перед обработкой
+    await overlayCompleter.future;
+
+    setState(() {
       _isProcessing = true;
     });
     ref.read(personImageProvider.notifier).setLoading(true);
@@ -314,7 +325,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final personState = ref.watch(personImageProvider);
     final selectedItems = ref.watch(selectedItemsProvider);
-    final isFabOpen = ref.watch(fabStateProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -349,28 +359,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               if (selectedItems.isNotEmpty) _buildCarousel(selectedItems),
             ],
           ),
-          if (_isProcessing || personState.isLoading) const LoadingOverlay(),
-          // Анимация примерки
-          if (_animatingClothingBase64 != null)
+          if (_celebrationClothingBase64 != null)
             TryOnAnimationOverlay(
-              clothingBase64: _animatingClothingBase64!,
+              clothingBase64: _celebrationClothingBase64!,
               onComplete: () {
-                // Анимация завершена
+                if (_celebrationCompleter != null &&
+                    !(_celebrationCompleter!.isCompleted)) {
+                  _celebrationCompleter!.complete();
+                }
+                if (mounted) {
+                  setState(() {
+                    _celebrationClothingBase64 = null;
+                    _celebrationCompleter = null;
+                  });
+                }
               },
             ),
+          if (_isProcessing || personState.isLoading) const LoadingOverlay(),
         ],
       ),
-      floatingActionButton: _HomeFAB(
-        isFabOpen: isFabOpen,
-        hasPersonImage: personState.base64Image != null,
-        onDeletePressed: _deletePersonImage,
-        onSavePressed: _saveToGallery,
-        onSharePressed: _shareImage,
-        onAIPressed: _showGeneratePersonDialog,
-        onCameraPressed: _showCameraOptions,
-        onUploadPressed: _pickPersonImage,
-        onToggleFAB: () {
-          ref.read(fabStateProvider.notifier).state = !isFabOpen;
+      floatingActionButton: Consumer(
+        builder: (context, ref, _) {
+          final isFabOpen = ref.watch(fabStateProvider);
+          return _HomeFAB(
+            isFabOpen: isFabOpen,
+            hasPersonImage: personState.base64Image != null,
+            onDeletePressed: _deletePersonImage,
+            onSavePressed: _saveToGallery,
+            onSharePressed: _shareImage,
+            onAIPressed: _showGeneratePersonDialog,
+            onCameraPressed: _showCameraOptions,
+            onUploadPressed: _pickPersonImage,
+            onToggleFAB: () {
+              ref.read(fabStateProvider.notifier).state = !isFabOpen;
+            },
+          );
         },
       ),
     );

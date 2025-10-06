@@ -151,6 +151,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
       context: context,
       sourceKey: itemKey,
       targetKey: cartIconKey,
+      targetOffset: const Offset(0, 24),
       imageBase64: item.base64Image,
       duration: const Duration(milliseconds: 800),
       onComplete: () {
@@ -211,7 +212,6 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   @override
   Widget build(BuildContext context) {
     final wardrobeItems = ref.watch(wardrobeProvider);
-    final isFabOpen = ref.watch(fabStateProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -232,13 +232,18 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
           if (_isProcessing) const _ProcessingOverlay(),
         ],
       ),
-      floatingActionButton: _WardrobeFAB(
-        isFabOpen: isFabOpen,
-        onAIPressed: _showGenerateDialog,
-        onCameraPressed: _showCameraOptions,
-        onUploadPressed: _pickClothingImages,
-        onToggleFAB: () {
-          ref.read(fabStateProvider.notifier).state = !isFabOpen;
+      floatingActionButton: Consumer(
+        builder: (context, ref, _) {
+          final isFabOpen = ref.watch(fabStateProvider);
+          return _WardrobeFAB(
+            isFabOpen: isFabOpen,
+            onAIPressed: _showGenerateDialog,
+            onCameraPressed: _showCameraOptions,
+            onUploadPressed: _pickClothingImages,
+            onToggleFAB: () {
+              ref.read(fabStateProvider.notifier).state = !isFabOpen;
+            },
+          );
         },
       ),
     );

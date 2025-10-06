@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 /// Сервис для создания анимации "летящего" виджета
@@ -10,6 +11,7 @@ class FlyingWidgetService {
     required GlobalKey sourceKey,
     required GlobalKey targetKey,
     required String imageBase64,
+    Offset targetOffset = Offset.zero,
     Duration duration = const Duration(milliseconds: 800),
     VoidCallback? onComplete,
   }) {
@@ -38,6 +40,7 @@ class FlyingWidgetService {
       targetPosition.dx + targetSize.width / 2,
       targetPosition.dy + targetSize.height / 2,
     );
+    final adjustedTargetCenter = targetCenter + targetOffset;
 
     // Создаём overlay entry
     final overlay = Overlay.of(context);
@@ -47,7 +50,7 @@ class FlyingWidgetService {
       builder: (context) => _FlyingWidget(
         imageBase64: imageBase64,
         startPosition: sourceCenter,
-        endPosition: targetCenter,
+        endPosition: adjustedTargetCenter,
         startSize: sourceSize,
         endSize: targetSize,
         duration: duration,
@@ -92,10 +95,13 @@ class _FlyingWidgetState extends State<_FlyingWidget>
   late Animation<Offset> _positionAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
+  late final Uint8List _imageBytes;
 
   @override
   void initState() {
     super.initState();
+
+    _imageBytes = base64Decode(widget.imageBase64);
 
     _controller = AnimationController(
       duration: widget.duration,
@@ -179,7 +185,7 @@ class _FlyingWidgetState extends State<_FlyingWidget>
                 child: Opacity(
                   opacity: _opacityAnimation.value,
                   child: Image.memory(
-                    base64Decode(widget.imageBase64),
+                    _imageBytes,
                     fit: BoxFit.cover,
                     gaplessPlayback: true,
                   ),
