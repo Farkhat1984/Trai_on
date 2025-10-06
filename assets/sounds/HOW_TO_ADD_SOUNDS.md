@@ -1,8 +1,8 @@
 # Временные Звуковые Файлы
 
 Эта папка должна содержать звуковые файлы:
-- click.mp3 (звук клика кнопки)
-- whoosh.mp3 (звук полёта)
+- click.wav (звук клика кнопки)
+- whoosh.wav (звук полёта)
 
 Пока файлы отсутствуют, приложение будет работать нормально, просто без звуков.
 
@@ -16,12 +16,12 @@ from pydub.generators import Sine
 
 # Создаём короткий клик (100ms)
 click = Sine(800).to_audio_segment(duration=100).fade_in(10).fade_out(10)
-click.export("click.mp3", format="mp3")
+click.export("click.wav", format="wav")
 
 # Создаём свуш (800ms) с затуханием
 whoosh = Sine(300).to_audio_segment(duration=800)
 whoosh = whoosh.fade_in(50).fade_out(400) - 10  # Уменьшаем громкость
-whoosh.export("whoosh.mp3", format="mp3")
+whoosh.export("whoosh.wav", format="wav")
 ```
 
 ## Или скачайте готовые звуки:
@@ -36,6 +36,7 @@ whoosh.export("whoosh.mp3", format="mp3")
 - Для свуша: "whoosh", "swipe transition", "swoosh fade"
 
 После скачивания:
-1. Переименуйте файлы в `click.mp3` и `whoosh.mp3`
+1. Переименуйте файлы в `click.wav` и `whoosh.wav`
 2. Поместите их в эту папку
-3. Перезапустите приложение
+3. Если файлы в MP3, конвертируйте их в WAV (можно онлайн на cloudconvert.com)
+4. Перезапустите приложение

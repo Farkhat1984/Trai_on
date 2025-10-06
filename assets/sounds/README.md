@@ -4,12 +4,12 @@ This directory should contain the following sound files:
 
 ## Required Files:
 
-1. **click.mp3** - A pleasant, short button click sound (around 100-200ms)
+1. **click.wav** - A pleasant, short button click sound (around 100-200ms)
    - Should be a soft, modern UI click sound
    - Example: A gentle "tap" or "pop" sound
    - Recommended: Use a free sound from freesound.org or similar
 
-2. **whoosh.mp3** - A long, decreasing whoosh sound for flying animations (around 800-1200ms)
+2. **whoosh.wav** - A long, decreasing whoosh sound for flying animations (around 800-1200ms)
    - Should start with a swoosh and gradually fade out
    - Syncs with the flying animation duration
    - Example: A "whoosh" or "swipe" sound that trails off

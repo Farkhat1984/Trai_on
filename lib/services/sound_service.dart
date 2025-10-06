@@ -21,13 +21,13 @@ class SoundService {
       // Создаём пул плееров для звука клика (3 плеера для одновременных кликов)
       for (int i = 0; i < 3; i++) {
         final player = AudioPlayer();
-        await player.setAsset('assets/sounds/click.mp3');
+        await player.setAsset('assets/sounds/click.wav');
         _clickPlayers.add(player);
       }
 
       // Создаём плеер для звука полёта (1 плеер, т.к. анимация одна)
       final flyingPlayer = AudioPlayer();
-      await flyingPlayer.setAsset('assets/sounds/whoosh.mp3');
+      await flyingPlayer.setAsset('assets/sounds/whoosh.wav');
       _flyingPlayers.add(flyingPlayer);
 
       _isInitialized = true;

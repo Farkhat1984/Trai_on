@@ -104,44 +104,46 @@ class _TryOnAnimationOverlayState extends State<TryOnAnimationOverlay>
                   ),
                 ),
                 // Анимирующееся изображение одежды
-                Center(
-                  child: Transform.translate(
-                    offset: Offset(
-                      0,
-                      _positionAnimation.value.dy *
-                          MediaQuery.of(context).size.height,
-                    ),
-                    child: Transform.scale(
-                      scale: _scaleAnimation.value,
-                      child: Container(
-                        width: 200,
-                        height: 250,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(
-                                  alpha: 0.3 * _opacityAnimation.value),
-                              blurRadius: 20,
-                              spreadRadius: 5,
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Opacity(
-                            opacity: _opacityAnimation.value,
-                            child: Image.memory(
-                              base64Decode(widget.clothingBase64),
-                              fit: BoxFit.cover,
+                // Скрываем после 50% анимации (когда начинается celebrate)
+                if (_controller.value < 0.5)
+                  Center(
+                    child: Transform.translate(
+                      offset: Offset(
+                        0,
+                        _positionAnimation.value.dy *
+                            MediaQuery.of(context).size.height,
+                      ),
+                      child: Transform.scale(
+                        scale: _scaleAnimation.value,
+                        child: Container(
+                          width: 200,
+                          height: 250,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(
+                                    alpha: 0.3 * _opacityAnimation.value),
+                                blurRadius: 20,
+                                spreadRadius: 5,
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Opacity(
+                              opacity: _opacityAnimation.value,
+                              child: Image.memory(
+                                base64Decode(widget.clothingBase64),
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
                 // Частицы эффекта "магии"
                 if (_controller.value > 0.5) ..._buildMagicParticles(context),
               ],
