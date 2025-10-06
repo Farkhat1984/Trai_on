@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class PersonImageState {
   final String? base64Image;
@@ -57,16 +58,43 @@ final hasPersonImageProvider = Provider<bool>((ref) {
 });
 
 class PersonImageNotifier extends StateNotifier<PersonImageState> {
-  PersonImageNotifier() : super(const PersonImageState());
+  PersonImageNotifier() : super(const PersonImageState()) {
+    _loadPersonImage();
+  }
 
-  void setPersonImage(String base64Image, {bool isOriginal = true}) {
+  // Загружаем сохранённое изображение модели при инициализации
+  Future<void> _loadPersonImage() async {
+    final box = Hive.box('settings');
+    final savedImage = box.get('person_image') as String?;
+    final savedOriginal = box.get('person_original_image') as String?;
+
+    if (savedImage != null) {
+      state = PersonImageState(
+        base64Image: savedImage,
+        originalBase64Image: savedOriginal ?? savedImage,
+        isLoading: false,
+      );
+    }
+  }
+
+  Future<void> setPersonImage(String base64Image,
+      {bool isOriginal = true}) async {
+    final box = Hive.box('settings');
+
     if (isOriginal) {
+      // Сохраняем и текущее, и оригинальное изображение
+      await box.put('person_image', base64Image);
+      await box.put('person_original_image', base64Image);
+
       state = PersonImageState(
         base64Image: base64Image,
         originalBase64Image: base64Image,
         isLoading: false,
       );
     } else {
+      // Сохраняем только текущее изображение (после примерки)
+      await box.put('person_image', base64Image);
+
       state = state.copyWith(
         base64Image: base64Image,
         isLoading: false,
@@ -78,12 +106,18 @@ class PersonImageNotifier extends StateNotifier<PersonImageState> {
     state = state.copyWith(isLoading: isLoading);
   }
 
-  void reset() {
+  Future<void> reset() async {
+    final box = Hive.box('settings');
+    await box.delete('person_image');
+    await box.delete('person_original_image');
     state = const PersonImageState();
   }
 
-  void restoreOriginal() {
+  Future<void> restoreOriginal() async {
     if (state.originalBase64Image != null) {
+      final box = Hive.box('settings');
+      await box.put('person_image', state.originalBase64Image);
+
       state = state.copyWith(
         base64Image: state.originalBase64Image,
       );

@@ -7,8 +7,10 @@ import '../providers/selected_items_provider.dart';
 import '../providers/fab_state_provider.dart';
 import '../services/api_service.dart';
 import '../services/image_service.dart';
+import '../services/flying_widget_service.dart';
 import '../widgets/person_display_widget.dart';
 import '../widgets/loading_overlay.dart';
+import '../widgets/try_on_animation_overlay.dart';
 import '../models/clothing_item.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -23,8 +25,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _promptController = TextEditingController();
   final _apiService = ApiService();
   final _imageService = ImageService();
+  final _modelKey = GlobalKey(); // Key для виджета модели
 
   bool _isProcessing = false;
+  String? _animatingClothingBase64;
 
   @override
   void dispose() {
@@ -194,7 +198,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return;
     }
 
-    setState(() => _isProcessing = true);
+    // Показываем анимацию взлёта
+    setState(() => _animatingClothingBase64 = clothingBase64);
+
+    // Ждём завершения анимации перед началом обработки
+    await Future.delayed(const Duration(milliseconds: 1200));
+
+    setState(() {
+      _animatingClothingBase64 = null;
+      _isProcessing = true;
+    });
     ref.read(personImageProvider.notifier).setLoading(true);
 
     try {
@@ -337,6 +350,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ],
           ),
           if (_isProcessing || personState.isLoading) const LoadingOverlay(),
+          // Анимация примерки
+          if (_animatingClothingBase64 != null)
+            TryOnAnimationOverlay(
+              clothingBase64: _animatingClothingBase64!,
+              onComplete: () {
+                // Анимация завершена
+              },
+            ),
         ],
       ),
       floatingActionButton: _HomeFAB(
@@ -361,6 +382,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: PersonDisplayWidget(
+          targetKey: _modelKey,
           onClothingDropped: _applyClothing,
         ).animate().fadeIn(duration: 300.ms),
       ),
@@ -386,9 +408,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
+          final itemKey = GlobalKey();
           return GestureDetector(
-            onDoubleTap: () => _applyClothing(item.base64Image),
+            onDoubleTap: () {
+              // Запускаем flying animation
+              FlyingWidgetService.flyWidget(
+                context: context,
+                sourceKey: itemKey,
+                targetKey: _modelKey,
+                imageBase64: item.base64Image,
+                duration: const Duration(milliseconds: 800),
+                onComplete: () {
+                  // После анимации применяем одежду
+                  _applyClothing(item.base64Image);
+                },
+              );
+            },
             child: Container(
+              key: itemKey,
               width: 100,
               margin: const EdgeInsets.only(right: 8),
               decoration: BoxDecoration(

@@ -8,6 +8,11 @@ import 'screens/wardrobe_screen.dart';
 import 'screens/shop_screen.dart';
 import 'screens/settings_screen.dart';
 import 'providers/theme_provider.dart';
+import 'providers/navigation_provider.dart';
+import 'providers/selected_items_provider.dart';
+
+// GlobalKey для иконки корзины (используется для flying animation)
+final GlobalKey cartIconKey = GlobalKey();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -134,54 +139,59 @@ class VirtualTryOnApp extends ConsumerWidget {
   }
 }
 
-class MainNavigator extends StatefulWidget {
+class MainNavigator extends ConsumerWidget {
   const MainNavigator({super.key});
 
   @override
-  State<MainNavigator> createState() => _MainNavigatorState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = ref.watch(navigationIndexProvider);
+    final selectedItemsCount = ref.watch(selectedItemsProvider).length;
 
-class _MainNavigatorState extends State<MainNavigator> {
-  int _currentIndex = 0;
+    final List<Widget> screens = [
+      const HomeScreen(),
+      const WardrobeScreen(),
+      const ShopScreen(),
+      const SettingsScreen(),
+    ];
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const WardrobeScreen(),
-    const ShopScreen(),
-    const SettingsScreen(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
+        index: currentIndex,
+        children: screens,
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
+        selectedIndex: currentIndex,
         onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          ref.read(navigationIndexProvider.notifier).state = index;
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
+            icon: Badge(
+              key: cartIconKey,
+              label:
+                  selectedItemsCount > 0 ? Text('$selectedItemsCount') : null,
+              isLabelVisible: selectedItemsCount > 0,
+              child: const Icon(Icons.home_outlined),
+            ),
+            selectedIcon: Badge(
+              label:
+                  selectedItemsCount > 0 ? Text('$selectedItemsCount') : null,
+              isLabelVisible: selectedItemsCount > 0,
+              child: const Icon(Icons.home),
+            ),
             label: 'Главная',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.checkroom_outlined),
             selectedIcon: Icon(Icons.checkroom),
             label: 'Гардероб',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.store_outlined),
             selectedIcon: Icon(Icons.store),
             label: 'Магазины',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.settings_outlined),
             selectedIcon: Icon(Icons.settings),
             label: 'Настройки',

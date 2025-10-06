@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/wardrobe_provider.dart';
+import '../services/flying_widget_service.dart';
+import '../main.dart' show cartIconKey;
 import '../providers/selected_items_provider.dart';
 import '../providers/fab_state_provider.dart';
 import '../services/image_service.dart';
@@ -143,15 +145,33 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
     );
   }
 
-  void _onItemDoubleTap(ClothingItem item) {
-    ref.read(selectedItemsProvider.notifier).addItem(item);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Добавлено в выбранные'),
-        duration: const Duration(seconds: 1),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
+  void _onItemDoubleTap(ClothingItem item, GlobalKey itemKey) {
+    // Запускаем flying animation
+    FlyingWidgetService.flyWidget(
+      context: context,
+      sourceKey: itemKey,
+      targetKey: cartIconKey,
+      imageBase64: item.base64Image,
+      duration: const Duration(milliseconds: 800),
+      onComplete: () {
+        // После анимации добавляем в корзину
+        ref.read(selectedItemsProvider.notifier).addItem(item);
+
+        // Показываем уведомление
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  Text('${item.description ?? "Одежда"} добавлена в корзину'),
+              duration: const Duration(milliseconds: 800),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      },
     );
   }
 
@@ -264,7 +284,7 @@ class _EmptyWardrobeWidget extends StatelessWidget {
 // Виджет сетки одежды
 class _WardrobeGridView extends StatelessWidget {
   final List<ClothingItem> items;
-  final Function(ClothingItem) onItemDoubleTap;
+  final Function(ClothingItem, GlobalKey) onItemDoubleTap;
   final Function(ClothingItem) onItemDelete;
   final Function(ClothingItem) onItemSave;
 
@@ -288,12 +308,54 @@ class _WardrobeGridView extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        return ClothingCardWidget(
-          key: ValueKey(item.id),
-          item: item,
-          onDoubleTap: () => onItemDoubleTap(item),
-          onDelete: () => onItemDelete(item),
-          onSave: () => onItemSave(item),
+        final itemKey = GlobalKey();
+        return Draggable<String>(
+          // Передаём ID и base64 через разделитель
+          data: '${item.id}:${item.base64Image}',
+          feedback: Material(
+            color: Colors.transparent,
+            child: Opacity(
+              opacity: 0.7,
+              child: Container(
+                width: 150,
+                height: 200,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.memory(
+                    base64Decode(item.base64Image),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          childWhenDragging: Opacity(
+            opacity: 0.3,
+            child: ClothingCardWidget(
+              key: itemKey,
+              item: item,
+              onDoubleTap: () => onItemDoubleTap(item, itemKey),
+              onDelete: () => onItemDelete(item),
+              onSave: () => onItemSave(item),
+            ),
+          ),
+          child: ClothingCardWidget(
+            key: itemKey,
+            item: item,
+            onDoubleTap: () => onItemDoubleTap(item, itemKey),
+            onDelete: () => onItemDelete(item),
+            onSave: () => onItemSave(item),
+          ),
         );
       },
     );
