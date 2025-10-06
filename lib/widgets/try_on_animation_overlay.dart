@@ -28,52 +28,57 @@ class _TryOnAnimationOverlayState extends State<TryOnAnimationOverlay>
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000), // Сократили с 1200 до 1000
+      duration: const Duration(
+          milliseconds:
+              800), // Сократили до 800ms, чтобы закончить на celebrate
       vsync: this,
     );
 
-    // Анимация масштаба: начинаем с 1.0, уменьшаемся до 0.2, останавливаемся
-    // Убрали финальную фазу уменьшения до 0
+    // Анимация масштаба: полёт вверх с уменьшением
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
         tween: Tween<double>(begin: 1.0, end: 0.5)
             .chain(CurveTween(curve: Curves.easeInOut)),
-        weight: 60,
+        weight: 70,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.5, end: 0.2)
+        tween: Tween<double>(begin: 0.5, end: 0.3)
             .chain(CurveTween(curve: Curves.easeIn)),
-        weight: 40,
+        weight: 30,
       ),
     ]).animate(_controller);
 
-    // Анимация позиции: летим вверх и в центр (без финальной фазы)
+    // Анимация позиции: летим вверх
     _positionAnimation = TweenSequence<Offset>([
       TweenSequenceItem(
         tween: Tween<Offset>(
           begin: Offset.zero,
-          end: const Offset(0, -0.3),
+          end: const Offset(0, -0.35),
         ).chain(CurveTween(curve: Curves.easeOut)),
-        weight: 60,
+        weight: 70,
       ),
       TweenSequenceItem(
         tween: Tween<Offset>(
-          begin: const Offset(0, -0.3),
-          end: const Offset(0, -0.4),
+          begin: const Offset(0, -0.35),
+          end: const Offset(0, -0.45),
         ).chain(CurveTween(curve: Curves.easeIn)),
-        weight: 40,
+        weight: 30,
       ),
     ]).animate(_controller);
 
-    // Анимация прозрачности: останавливаемся на 0.3 вместо 0
+    // Анимация прозрачности: плавное исчезновение
     _opacityAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 0.8),
-        weight: 50,
+        tween: Tween<double>(begin: 1.0, end: 0.9),
+        weight: 40,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.8, end: 0.3),
-        weight: 50,
+        tween: Tween<double>(begin: 0.9, end: 0.5),
+        weight: 30,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.5, end: 0.0),
+        weight: 30,
       ),
     ]).animate(_controller);
 
@@ -104,46 +109,44 @@ class _TryOnAnimationOverlayState extends State<TryOnAnimationOverlay>
                   ),
                 ),
                 // Анимирующееся изображение одежды
-                // Скрываем после 50% анимации (когда начинается celebrate)
-                if (_controller.value < 0.5)
-                  Center(
-                    child: Transform.translate(
-                      offset: Offset(
-                        0,
-                        _positionAnimation.value.dy *
-                            MediaQuery.of(context).size.height,
-                      ),
-                      child: Transform.scale(
-                        scale: _scaleAnimation.value,
-                        child: Container(
-                          width: 200,
-                          height: 250,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(
-                                    alpha: 0.3 * _opacityAnimation.value),
-                                blurRadius: 20,
-                                spreadRadius: 5,
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Opacity(
-                              opacity: _opacityAnimation.value,
-                              child: Image.memory(
-                                base64Decode(widget.clothingBase64),
-                                fit: BoxFit.cover,
-                              ),
+                Center(
+                  child: Transform.translate(
+                    offset: Offset(
+                      0,
+                      _positionAnimation.value.dy *
+                          MediaQuery.of(context).size.height,
+                    ),
+                    child: Transform.scale(
+                      scale: _scaleAnimation.value,
+                      child: Container(
+                        width: 200,
+                        height: 250,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(
+                                  alpha: 0.3 * _opacityAnimation.value),
+                              blurRadius: 20,
+                              spreadRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Opacity(
+                            opacity: _opacityAnimation.value,
+                            child: Image.memory(
+                              base64Decode(widget.clothingBase64),
+                              fit: BoxFit.cover,
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
+                ),
                 // Частицы эффекта "магии"
                 if (_controller.value > 0.5) ..._buildMagicParticles(context),
               ],
