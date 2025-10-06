@@ -12,7 +12,7 @@ import '../services/flying_widget_service.dart';
 import '../services/sound_service.dart';
 import '../widgets/person_display_widget.dart';
 import '../widgets/loading_overlay.dart';
-import '../widgets/try_on_animation_overlay.dart';
+import '../widgets/celebrate_overlay.dart';
 import '../widgets/sound_buttons.dart';
 import '../models/clothing_item.dart';
 import 'package:share_plus/share_plus.dart';
@@ -31,8 +31,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _modelKey = GlobalKey(); // Key для виджета модели
 
   bool _isProcessing = false;
-  String? _celebrationClothingBase64;
-  Completer<void>? _celebrationCompleter;
+  bool _showCelebrate = false; // Celebrate effect after generation
 
   @override
   void dispose() {
@@ -202,22 +201,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return;
     }
 
-    // Отображаем эффект "салюта" после полёта
-    if (_celebrationCompleter != null &&
-        !(_celebrationCompleter!.isCompleted)) {
-      _celebrationCompleter!.complete();
-    }
-
-    final overlayCompleter = Completer<void>();
-
-    setState(() {
-      _celebrationClothingBase64 = clothingBase64;
-      _celebrationCompleter = overlayCompleter;
-    });
-
-    // Ждём завершения эффекта перед обработкой
-    await overlayCompleter.future;
-
     setState(() {
       _isProcessing = true;
     });
@@ -233,6 +216,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref
           .read(personImageProvider.notifier)
           .setPersonImage(base64, isOriginal: false);
+
+      // Show celebrate effect after successful generation
+      setState(() => _showCelebrate = true);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -253,11 +239,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     try {
       final bytes = base64Decode(personState.base64Image!);
+      final xFile = XFile.fromData(
+        bytes,
+        name: 'virtual_try_on.png',
+        mimeType: 'image/png',
+      );
+      // ignore: deprecated_member_use
       await Share.shareXFiles(
-        [
-          XFile.fromData(bytes,
-              name: 'virtual_try_on.png', mimeType: 'image/png')
-        ],
+        [xFile],
         subject: 'Создано в Виртуальной примерочной!',
       );
 
@@ -361,23 +350,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               if (selectedItems.isNotEmpty) _buildCarousel(selectedItems),
             ],
           ),
-          if (_celebrationClothingBase64 != null)
-            TryOnAnimationOverlay(
-              clothingBase64: _celebrationClothingBase64!,
+          if (_isProcessing || personState.isLoading) const LoadingOverlay(),
+          if (_showCelebrate)
+            CelebrateOverlay(
               onComplete: () {
-                if (_celebrationCompleter != null &&
-                    !(_celebrationCompleter!.isCompleted)) {
-                  _celebrationCompleter!.complete();
-                }
-                if (mounted) {
-                  setState(() {
-                    _celebrationClothingBase64 = null;
-                    _celebrationCompleter = null;
-                  });
-                }
+                setState(() => _showCelebrate = false);
               },
             ),
-          if (_isProcessing || personState.isLoading) const LoadingOverlay(),
         ],
       ),
       floatingActionButton: Consumer(

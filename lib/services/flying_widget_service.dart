@@ -128,15 +128,15 @@ class _FlyingWidgetState extends State<_FlyingWidget>
       curve: Curves.easeInOut,
     ));
 
-    // Анимация прозрачности
+    // Анимация прозрачности - виджет исчезает полностью в конце
     _opacityAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 0.8),
-        weight: 50,
+        tween: Tween<double>(begin: 1.0, end: 1.0),
+        weight: 70,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.8, end: 0.3),
-        weight: 50,
+        tween: Tween<double>(begin: 1.0, end: 0.0),
+        weight: 30,
       ),
     ]).animate(_controller);
 
@@ -162,28 +162,28 @@ class _FlyingWidgetState extends State<_FlyingWidget>
               (widget.startSize.width / 2 * _scaleAnimation.value),
           top: _positionAnimation.value.dy -
               (widget.startSize.height / 2 * _scaleAnimation.value),
-          child: Transform.scale(
-            scale: _scaleAnimation.value,
-            child: Container(
-              width: widget.startSize.width,
-              height: widget.startSize.height,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: 0.3 * _opacityAnimation.value,
+          child: Opacity(
+            opacity: _opacityAnimation.value,
+            child: Transform.scale(
+              scale: _scaleAnimation.value,
+              child: Container(
+                width: widget.startSize.width,
+                height: widget.startSize.height,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: 0.3 * _opacityAnimation.value,
+                      ),
+                      blurRadius: 15,
+                      spreadRadius: 2,
                     ),
-                    blurRadius: 15,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Opacity(
-                  opacity: _opacityAnimation.value,
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
                   child: Image.memory(
                     _imageBytes,
                     fit: BoxFit.cover,

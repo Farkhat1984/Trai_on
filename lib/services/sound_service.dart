@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
 /// Сервис для управления звуковыми эффектами
@@ -33,7 +34,7 @@ class SoundService {
       _isInitialized = true;
     } catch (e) {
       // Если звуки не загрузились, продолжаем работу без них
-      print('Sound initialization error: $e');
+      debugPrint('Sound initialization error: $e');
       _isInitialized = false;
     }
   }
@@ -60,7 +61,7 @@ class SoundService {
       await player.seek(Duration.zero);
       await player.play();
     } catch (e) {
-      print('Click sound error: $e');
+      debugPrint('Click sound error: $e');
     }
   }
 
@@ -86,7 +87,7 @@ class SoundService {
         _fadeOutVolume(player, duration);
       }
     } catch (e) {
-      print('Flying sound error: $e');
+      debugPrint('Flying sound error: $e');
     }
   }
 
