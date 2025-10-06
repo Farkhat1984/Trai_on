@@ -158,24 +158,26 @@ class _FlyingWidgetState extends State<_FlyingWidget>
               (widget.startSize.height / 2 * _scaleAnimation.value),
           child: Transform.scale(
             scale: _scaleAnimation.value,
-            child: Opacity(
-              opacity: _opacityAnimation.value,
-              child: Container(
-                width: widget.startSize.width,
-                height: widget.startSize.height,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 15,
-                      spreadRadius: 2,
+            child: Container(
+              width: widget.startSize.width,
+              height: widget.startSize.height,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(
+                      alpha: 0.3 * _opacityAnimation.value,
                     ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
+                    blurRadius: 15,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Opacity(
+                  opacity: _opacityAnimation.value,
                   child: Image.memory(
                     base64Decode(widget.imageBase64),
                     fit: BoxFit.cover,

@@ -121,23 +121,25 @@ class _TryOnAnimationOverlayState extends State<TryOnAnimationOverlay>
                     ),
                     child: Transform.scale(
                       scale: _scaleAnimation.value,
-                      child: Opacity(
-                        opacity: _opacityAnimation.value,
-                        child: Container(
-                          width: 200,
-                          height: 250,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                blurRadius: 20,
-                                spreadRadius: 5,
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        width: 200,
+                        height: 250,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(
+                                  alpha: 0.3 * _opacityAnimation.value),
+                              blurRadius: 20,
+                              spreadRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Opacity(
+                            opacity: _opacityAnimation.value,
                             child: Image.memory(
                               base64Decode(widget.clothingBase64),
                               fit: BoxFit.cover,
@@ -170,22 +172,20 @@ class _TryOnAnimationOverlayState extends State<TryOnAnimationOverlay>
             100 +
             radius * sin(angle) -
             4,
-        child: Opacity(
-          opacity: 1 - particleProgress,
-          child: Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.blue.withValues(alpha: 0.6),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.withValues(alpha: 0.3),
-                  blurRadius: 4,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
+        child: Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.blue.withValues(alpha: 0.6 * (1 - particleProgress)),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    Colors.blue.withValues(alpha: 0.3 * (1 - particleProgress)),
+                blurRadius: 4,
+                spreadRadius: 2,
+              ),
+            ],
           ),
         ),
       );
