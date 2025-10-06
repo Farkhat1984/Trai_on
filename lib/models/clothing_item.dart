@@ -16,7 +16,7 @@ class ClothingItem {
   @HiveField(3)
   final String? description;
 
-  ClothingItem({
+  const ClothingItem({
     required this.id,
     required this.base64Image,
     required this.createdAt,
@@ -36,4 +36,14 @@ class ClothingItem {
       description: description ?? this.description,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ClothingItem &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

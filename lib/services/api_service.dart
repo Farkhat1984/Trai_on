@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../utils/logger.dart';
 
 class ApiService {
   static const String _apiKey =
@@ -75,18 +76,18 @@ class ApiService {
       attempts++;
 
       try {
-        print('Попытка $attempts из $maxAttempts...');
+        logger.d('Попытка $attempts из $maxAttempts...');
 
         // Вывод информации о запросе (без base64 данных для читаемости)
-        print('=== Отправка запроса ===');
-        print('URL: $_baseUrl');
-        print(
+        logger.d('=== Отправка запроса ===');
+        logger.d('URL: $_baseUrl');
+        logger.d(
             'Количество изображений: ${personBase64 != null ? 1 : 0} + ${clothingBase64 != null ? 1 : 0}');
-        print(
+        logger.d(
             'Текст промпта: ${userPrompt.length > 100 ? "${userPrompt.substring(0, 100)}..." : userPrompt}');
         final genConfig = payload['generationConfig'] as Map?;
-        print('responseModalities: ${genConfig?['responseModalities']}');
-        print('=======================');
+        logger.d('responseModalities: ${genConfig?['responseModalities']}');
+        logger.d('=======================');
 
         final response = await _dio.post(
           '$_baseUrl?key=$_apiKey',
@@ -100,33 +101,33 @@ class ApiService {
           final result = response.data;
 
           // Отладка: выводим полный ответ API
-          print('=== Полный ответ API ===');
-          print('promptFeedback: ${result['promptFeedback']}');
-          print('candidates length: ${result['candidates']?.length ?? 0}');
+          logger.d('=== Полный ответ API ===');
+          logger.d('promptFeedback: ${result['promptFeedback']}');
+          logger.d('candidates length: ${result['candidates']?.length ?? 0}');
           if (result['candidates'] != null &&
               (result['candidates'] as List).isNotEmpty) {
             final candidate = result['candidates'][0];
-            print('finishReason: ${candidate['finishReason']}');
-            print(
+            logger.d('finishReason: ${candidate['finishReason']}');
+            logger.d(
                 'content.parts length: ${candidate['content']?['parts']?.length ?? 0}');
             if (candidate['content']?['parts'] != null) {
               for (var i = 0;
                   i < (candidate['content']['parts'] as List).length;
                   i++) {
                 final part = candidate['content']['parts'][i];
-                print('Part $i: ${part.keys.toList()}');
+                logger.d('Part $i: ${part.keys.toList()}');
               }
             }
           }
-          print('========================');
+          logger.d('========================');
 
           // Проверка на блокировку контента
           if (result['promptFeedback']?['blockReason'] != null) {
             final blockReason = result['promptFeedback']['blockReason'];
             final safetyRatings = result['promptFeedback']?['safetyRatings'];
-            print('⚠️ БЛОКИРОВКА: $blockReason');
+            logger.d('⚠️ БЛОКИРОВКА: $blockReason');
             if (safetyRatings != null) {
-              print('Safety ratings: $safetyRatings');
+              logger.d('Safety ratings: $safetyRatings');
             }
             throw Exception(
                 'Запрос заблокирован: $blockReason. Попробуйте изменить описание или использовать другие изображения.');
@@ -135,9 +136,9 @@ class ApiService {
           // Проверка наличия кандидатов
           if (result['candidates'] == null ||
               (result['candidates'] as List).isEmpty) {
-            print('⚠️ Пустой массив candidates');
+            logger.d('⚠️ Пустой массив candidates');
             if (attempts < maxAttempts) {
-              print('Повтор попытки через $delayмс...');
+              logger.d('Повтор попытки через $delayмс...');
               await Future.delayed(Duration(milliseconds: delay));
               delay *= 2;
               continue;
@@ -155,10 +156,9 @@ class ApiService {
           // Проверка на фильтр безопасности
           if (finishReason == 'SAFETY') {
             final safetyRatings = candidates[0]['safetyRatings'];
-            print('⚠️ БЛОКИРОВКА SAFETY FILTER');
-            print('Safety ratings: $safetyRatings');
-            throw Exception(
-                'Изображение заблокировано фильтром безопасности.\n'
+            logger.d('⚠️ БЛОКИРОВКА SAFETY FILTER');
+            logger.d('Safety ratings: $safetyRatings');
+            throw Exception('Изображение заблокировано фильтром безопасности.\n'
                 'Рекомендации:\n'
                 '- Используйте нейтральные изображения\n'
                 '- Избегайте откровенной одежды\n'
@@ -167,9 +167,9 @@ class ApiService {
 
           // Обработка IMAGE_OTHER - модель не смогла сгенерировать изображение
           if (finishReason == 'IMAGE_OTHER') {
-            print('⚠️ IMAGE_OTHER: Модель не смогла обработать изображения');
+            logger.d('⚠️ IMAGE_OTHER: Модель не смогла обработать изображения');
             if (attempts < maxAttempts) {
-              print('Повтор попытки через $delayмс...');
+              logger.d('Повтор попытки через $delayмс...');
               await Future.delayed(Duration(milliseconds: delay));
               delay *= 2;
               continue;
@@ -188,7 +188,7 @@ class ApiService {
           // Пустой parts - повторяем попытку
           if (parts == null || parts.isEmpty) {
             if (attempts < maxAttempts) {
-              print('Parts пустой, повтор через $delayмс...');
+              logger.d('Parts пустой, повтор через $delayмс...');
               await Future.delayed(Duration(milliseconds: delay));
               delay *= 2;
               continue;
@@ -217,14 +217,18 @@ class ApiService {
               }
             }
 
-            print('❌ Изображение не найдено в ответе API');
-            print('Parts структура: ${parts.map((p) => p.keys.toList()).toList()}');
+            logger.d('❌ Изображение не найдено в ответе API');
+            logger.d(
+                'Parts структура: ${parts.map((p) => p.keys.toList()).toList()}');
 
             if (attempts < maxAttempts) {
-              print('Повтор попытки $attempts/$maxAttempts через $delayмс...');
+              logger
+                  .d('Повтор попытки $attempts/$maxAttempts через $delayмс...');
               if (textPart != null) {
-                print('⚠️ API вернул текст вместо изображения: ${textPart['text']}');
-                print('ПРИЧИНА: Скорее всего изображения слишком сложные для композиции');
+                logger.d(
+                    '⚠️ API вернул текст вместо изображения: ${textPart['text']}');
+                logger.d(
+                    'ПРИЧИНА: Скорее всего изображения слишком сложные для композиции');
               }
               await Future.delayed(Duration(milliseconds: delay));
               delay *= 2;
@@ -235,10 +239,10 @@ class ApiService {
                 'API не вернул изображение после $maxAttempts попыток.\n';
             if (textPart != null) {
               errText += '\n⚠️ Модель вернула текст: "${textPart['text']}"\n';
-              errText += '\nЭто означает, что модель не смогла обработать изображения.\n';
+              errText +=
+                  '\nЭто означает, что модель не смогла обработать изображения.\n';
             }
-            errText +=
-                '\nРЕКОМЕНДАЦИИ:\n'
+            errText += '\nРЕКОМЕНДАЦИИ:\n'
                 '1. Используйте более простые изображения\n'
                 '2. Убедитесь, что фото модели четкое и хорошо освещено\n'
                 '3. Одежда должна быть на чистом фоне\n'
@@ -247,14 +251,14 @@ class ApiService {
             throw Exception(errText);
           }
 
-          print('✓ Изображение успешно получено!');
+          logger.d('✓ Изображение успешно получено!');
           return imagePart['inlineData']['data'] as String;
         }
 
         // Обработка других статус кодов
         if (response.statusCode == 429) {
           if (attempts < maxAttempts) {
-            print('Превышен лимит запросов (429), ожидание $delayмс...');
+            logger.d('Превышен лимит запросов (429), ожидание $delayмс...');
             await Future.delayed(Duration(milliseconds: delay));
             delay *= 2;
             continue;
@@ -265,7 +269,7 @@ class ApiService {
 
         if (response.statusCode == 503) {
           if (attempts < maxAttempts) {
-            print(
+            logger.d(
                 'Сервис временно недоступен (503), ожидание ${delay * 2}мс...');
             await Future.delayed(Duration(
                 milliseconds: delay * 2)); // Удвоенная задержка для 503
@@ -278,7 +282,7 @@ class ApiService {
 
         if ((response.statusCode ?? 0) >= 500) {
           if (attempts < maxAttempts) {
-            print(
+            logger.d(
                 'Ошибка сервера (${response.statusCode}), повтор через $delayмс...');
             await Future.delayed(Duration(milliseconds: delay));
             delay *= 2;
@@ -292,20 +296,20 @@ class ApiService {
             'Ошибка API: ${response.statusCode} - ${response.statusMessage}');
       } on DioException catch (e) {
         // Детальный вывод ошибки для отладки
-        print('=== DioException детали ===');
-        print('Тип: ${e.type}');
-        print('Статус код: ${e.response?.statusCode}');
-        print('Сообщение: ${e.message}');
+        logger.d('=== DioException детали ===');
+        logger.d('Тип: ${e.type}');
+        logger.d('Статус код: ${e.response?.statusCode}');
+        logger.d('Сообщение: ${e.message}');
 
         if (e.response?.data != null) {
-          print('Ответ сервера:');
-          print(e.response?.data);
+          logger.d('Ответ сервера:');
+          logger.d(e.response?.data);
 
           // Проверяем специфичные ошибки Google API
           if (e.response?.data is Map) {
             final data = e.response?.data as Map;
             if (data['error'] != null) {
-              print('Ошибка Google API: ${data['error']}');
+              logger.d('Ошибка Google API: ${data['error']}');
 
               // Если это ошибка квоты или разрешений
               if (data['error']['code'] == 400) {
@@ -322,10 +326,10 @@ class ApiService {
             }
           }
         }
-        print('========================');
+        logger.d('========================');
 
         if (attempts < maxAttempts) {
-          print('Повтор через $delayмс...');
+          logger.d('Повтор через $delayмс...');
           await Future.delayed(Duration(milliseconds: delay));
           delay *= 2;
           continue;
@@ -341,7 +345,7 @@ class ApiService {
             'Ошибка сети: ${e.message}. Проверьте подключение к интернету.');
       } catch (e) {
         if (attempts < maxAttempts) {
-          print('Неожиданная ошибка: $e, повтор через $delayмс...');
+          logger.d('Неожиданная ошибка: $e, повтор через $delayмс...');
           await Future.delayed(Duration(milliseconds: delay));
           delay *= 2;
           continue;

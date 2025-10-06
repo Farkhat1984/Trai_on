@@ -73,7 +73,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildThemeCard(BuildContext context, WidgetRef ref, ThemeMode currentMode) {
+  Widget _buildThemeCard(
+      BuildContext context, WidgetRef ref, ThemeMode currentMode) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -82,7 +83,8 @@ class SettingsScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.palette_outlined, color: Theme.of(context).colorScheme.primary),
+                Icon(Icons.palette_outlined,
+                    color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 12),
                 Text(
                   'Тема оформления',
@@ -148,7 +150,7 @@ class SettingsScreen extends ConsumerWidget {
           border: Border.all(
             color: isSelected
                 ? Theme.of(context).colorScheme.primary
-                : Colors.grey.withOpacity(0.3),
+                : Colors.grey.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -166,9 +168,8 @@ class SettingsScreen extends ConsumerWidget {
                 title,
                 style: TextStyle(
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primary
-                      : null,
+                  color:
+                      isSelected ? Theme.of(context).colorScheme.primary : null,
                 ),
               ),
             ),
@@ -265,7 +266,8 @@ class SettingsScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.info_outline, color: Theme.of(context).colorScheme.primary),
+                Icon(Icons.info_outline,
+                    color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 12),
                 Text(
                   'Виртуальная примерочная',
@@ -314,7 +316,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, {required IconData icon, required String text}) {
+  Widget _buildInfoRow(BuildContext context,
+      {required IconData icon, required String text}) {
     return Row(
       children: [
         Icon(icon, size: 20, color: Colors.grey[600]),

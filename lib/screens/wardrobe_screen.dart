@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/wardrobe_provider.dart';
 import '../providers/selected_items_provider.dart';
+import '../providers/fab_state_provider.dart';
 import '../services/image_service.dart';
 import '../services/api_service.dart';
 import '../models/clothing_item.dart';
@@ -21,7 +22,6 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   final _apiService = ApiService();
   final _clothingPromptController = TextEditingController();
   bool _isProcessing = false;
-  bool _isFabOpen = false;
 
   @override
   void dispose() {
@@ -30,7 +30,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   }
 
   Future<void> _pickClothingImages() async {
-    setState(() => _isFabOpen = false);
+    ref.read(fabStateProvider.notifier).state = false;
     try {
       final base64List = await _imageService.pickMultipleImagesFromGallery();
       for (final base64 in base64List) {
@@ -43,7 +43,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
 
   // Сразу запускаем заднюю камеру без выбора
   Future<void> _takeClothingPhoto() async {
-    setState(() => _isFabOpen = false);
+    ref.read(fabStateProvider.notifier).state = false;
     try {
       // Всегда используем заднюю камеру (preferFrontCamera: false)
       final base64 =
@@ -57,7 +57,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   }
 
   void _showCameraOptions() {
-    setState(() => _isFabOpen = false);
+    ref.read(fabStateProvider.notifier).state = false;
     _takeClothingPhoto();
   }
 
@@ -95,7 +95,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   }
 
   void _showGenerateDialog() {
-    setState(() => _isFabOpen = false);
+    ref.read(fabStateProvider.notifier).state = false;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -191,6 +191,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   @override
   Widget build(BuildContext context) {
     final wardrobeItems = ref.watch(wardrobeProvider);
+    final isFabOpen = ref.watch(fabStateProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -201,103 +202,201 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
       body: Stack(
         children: [
           wardrobeItems.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.checkroom_outlined,
-                        size: 100,
-                        color: Colors.grey[300],
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Гардероб пуст',
-                        style:
-                            Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w600,
-                                ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Добавьте одежду, чтобы начать',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Colors.grey[500],
-                            ),
-                      ),
-                    ],
-                  ).animate().fadeIn(duration: 300.ms),
-                )
-              : GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.75,
-                  ),
-                  itemCount: wardrobeItems.length,
-                  itemBuilder: (context, index) {
-                    final item = wardrobeItems[index];
-                    return ClothingCardWidget(
-                      item: item,
-                      onDoubleTap: () => _onItemDoubleTap(item),
-                      onDelete: () => _deleteClothingItem(item),
-                      onSave: () => _saveClothingToGallery(item),
-                    );
-                  },
+              ? const _EmptyWardrobeWidget()
+              : _WardrobeGridView(
+                  items: wardrobeItems,
+                  onItemDoubleTap: _onItemDoubleTap,
+                  onItemDelete: _deleteClothingItem,
+                  onItemSave: _saveClothingToGallery,
                 ),
-          if (_isProcessing)
-            Container(
-              color: Colors.black.withValues(alpha: 0.5),
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
+          if (_isProcessing) const _ProcessingOverlay(),
         ],
       ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (_isFabOpen) ...[
-            FloatingActionButton(
-              heroTag: 'ai',
-              mini: true,
-              backgroundColor: Colors.purple,
-              onPressed: _showGenerateDialog,
-              child: const Icon(Icons.auto_awesome, color: Colors.white),
-            ),
-            const SizedBox(height: 12),
-            FloatingActionButton(
-              heroTag: 'camera',
-              mini: true,
-              backgroundColor: Colors.blue,
-              onPressed: _showCameraOptions,
-              child: const Icon(Icons.camera_alt, color: Colors.white),
-            ),
-            const SizedBox(height: 12),
-            FloatingActionButton(
-              heroTag: 'upload',
-              mini: true,
-              backgroundColor: Colors.green,
-              onPressed: _pickClothingImages,
-              child: const Icon(Icons.photo_library, color: Colors.white),
-            ),
-            const SizedBox(height: 12),
-          ],
-          FloatingActionButton(
-            onPressed: () {
-              setState(() => _isFabOpen = !_isFabOpen);
-            },
-            child: AnimatedRotation(
-              turns: _isFabOpen ? 0.125 : 0,
-              duration: const Duration(milliseconds: 200),
-              child: Icon(_isFabOpen ? Icons.close : Icons.add),
-            ),
-          ),
-        ],
+      floatingActionButton: _WardrobeFAB(
+        isFabOpen: isFabOpen,
+        onAIPressed: _showGenerateDialog,
+        onCameraPressed: _showCameraOptions,
+        onUploadPressed: _pickClothingImages,
+        onToggleFAB: () {
+          ref.read(fabStateProvider.notifier).state = !isFabOpen;
+        },
       ),
     );
+  }
+}
+
+// Виджет пустого гардероба
+class _EmptyWardrobeWidget extends StatelessWidget {
+  const _EmptyWardrobeWidget();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.checkroom_outlined,
+            size: 100,
+            color: Colors.grey[300],
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Гардероб пуст',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Добавьте одежду, чтобы начать',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Colors.grey[500],
+                ),
+          ),
+        ],
+      ).animate().fadeIn(duration: 300.ms),
+    );
+  }
+}
+
+// Виджет сетки одежды
+class _WardrobeGridView extends StatelessWidget {
+  final List<ClothingItem> items;
+  final Function(ClothingItem) onItemDoubleTap;
+  final Function(ClothingItem) onItemDelete;
+  final Function(ClothingItem) onItemSave;
+
+  const _WardrobeGridView({
+    required this.items,
+    required this.onItemDoubleTap,
+    required this.onItemDelete,
+    required this.onItemSave,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.75,
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return ClothingCardWidget(
+          key: ValueKey(item.id),
+          item: item,
+          onDoubleTap: () => onItemDoubleTap(item),
+          onDelete: () => onItemDelete(item),
+          onSave: () => onItemSave(item),
+        );
+      },
+    );
+  }
+}
+
+// Виджет оверлея обработки
+class _ProcessingOverlay extends StatelessWidget {
+  const _ProcessingOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black.withValues(alpha: 0.5),
+      child: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+}
+
+// Виджет FAB с кнопками
+class _WardrobeFAB extends StatelessWidget {
+  final bool isFabOpen;
+  final VoidCallback onAIPressed;
+  final VoidCallback onCameraPressed;
+  final VoidCallback onUploadPressed;
+  final VoidCallback onToggleFAB;
+
+  const _WardrobeFAB({
+    required this.isFabOpen,
+    required this.onAIPressed,
+    required this.onCameraPressed,
+    required this.onUploadPressed,
+    required this.onToggleFAB,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isFabOpen) ...[
+          _FABButton(
+            heroTag: 'ai',
+            backgroundColor: Colors.purple,
+            icon: Icons.auto_awesome,
+            onPressed: onAIPressed,
+          ),
+          const SizedBox(height: 12),
+          _FABButton(
+            heroTag: 'camera',
+            backgroundColor: Colors.blue,
+            icon: Icons.camera_alt,
+            onPressed: onCameraPressed,
+          ),
+          const SizedBox(height: 12),
+          _FABButton(
+            heroTag: 'upload',
+            backgroundColor: Colors.green,
+            icon: Icons.photo_library,
+            onPressed: onUploadPressed,
+          ),
+          const SizedBox(height: 12),
+        ],
+        FloatingActionButton(
+          onPressed: onToggleFAB,
+          child: AnimatedRotation(
+            turns: isFabOpen ? 0.125 : 0,
+            duration: const Duration(milliseconds: 200),
+            child: Icon(isFabOpen ? Icons.close : Icons.add),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Маленькая кнопка FAB
+class _FABButton extends StatelessWidget {
+  final String heroTag;
+  final Color backgroundColor;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const _FABButton({
+    required this.heroTag,
+    required this.backgroundColor,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      heroTag: heroTag,
+      mini: true,
+      backgroundColor: backgroundColor,
+      onPressed: onPressed,
+      child: Icon(icon, color: Colors.white),
+    ).animate().fadeIn(duration: 200.ms).scale(
+          begin: const Offset(0.5, 0.5),
+          duration: 200.ms,
+        );
   }
 }

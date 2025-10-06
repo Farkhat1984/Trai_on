@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../utils/logger.dart';
 
 class ShopScreen extends ConsumerStatefulWidget {
   const ShopScreen({super.key});
@@ -22,7 +23,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
     // TODO: Здесь будет поиск товаров
     // Пока просто показываем, что поиск работает
-    print('Поиск: $query');
+    logger.d('Поиск: $query');
   }
 
   @override

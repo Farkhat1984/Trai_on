@@ -51,6 +51,7 @@ dependencies:
   # Utils
   uuid: ^4.5.1
   intl: ^0.20.2
+  logger: ^2.4.0
 
 dev_dependencies:
   flutter_test:
@@ -65,8 +66,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
-    - assets/animations/
     - assets/icons/
 
 flutter_launcher_icons:

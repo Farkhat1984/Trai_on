@@ -5,7 +5,7 @@ class PersonImageState {
   final String? originalBase64Image;
   final bool isLoading;
 
-  PersonImageState({
+  const PersonImageState({
     this.base64Image,
     this.originalBase64Image,
     this.isLoading = false,
@@ -22,14 +22,42 @@ class PersonImageState {
       isLoading: isLoading ?? this.isLoading,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PersonImageState &&
+          runtimeType == other.runtimeType &&
+          base64Image == other.base64Image &&
+          originalBase64Image == other.originalBase64Image &&
+          isLoading == other.isLoading;
+
+  @override
+  int get hashCode =>
+      base64Image.hashCode ^ originalBase64Image.hashCode ^ isLoading.hashCode;
 }
 
-final personImageProvider = StateNotifierProvider<PersonImageNotifier, PersonImageState>((ref) {
+final personImageProvider =
+    StateNotifierProvider<PersonImageNotifier, PersonImageState>((ref) {
   return PersonImageNotifier();
 });
 
+// Селекторы для оптимизации - подписываемся только на нужные части состояния
+final personImageBase64Provider = Provider<String?>((ref) {
+  return ref.watch(personImageProvider.select((state) => state.base64Image));
+});
+
+final personImageLoadingProvider = Provider<bool>((ref) {
+  return ref.watch(personImageProvider.select((state) => state.isLoading));
+});
+
+final hasPersonImageProvider = Provider<bool>((ref) {
+  return ref
+      .watch(personImageProvider.select((state) => state.base64Image != null));
+});
+
 class PersonImageNotifier extends StateNotifier<PersonImageState> {
-  PersonImageNotifier() : super(PersonImageState());
+  PersonImageNotifier() : super(const PersonImageState());
 
   void setPersonImage(String base64Image, {bool isOriginal = true}) {
     if (isOriginal) {
@@ -51,7 +79,7 @@ class PersonImageNotifier extends StateNotifier<PersonImageState> {
   }
 
   void reset() {
-    state = PersonImageState();
+    state = const PersonImageState();
   }
 
   void restoreOriginal() {

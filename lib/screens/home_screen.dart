@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/person_image_provider.dart';
 import '../providers/selected_items_provider.dart';
+import '../providers/fab_state_provider.dart';
 import '../services/api_service.dart';
 import '../services/image_service.dart';
 import '../widgets/person_display_widget.dart';
@@ -24,7 +25,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _imageService = ImageService();
 
   bool _isProcessing = false;
-  bool _isFabOpen = false;
 
   @override
   void dispose() {
@@ -33,7 +33,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _pickPersonImage() async {
-    setState(() => _isFabOpen = false);
+    ref.read(fabStateProvider.notifier).state = false;
     try {
       final base64 = await _imageService.pickImageFromGallery();
       if (base64 != null) {
@@ -91,7 +91,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _showGeneratePersonDialog() {
-    setState(() => _isFabOpen = false);
+    ref.read(fabStateProvider.notifier).state = false;
     final personState = ref.read(personImageProvider);
     final hasModel = personState.base64Image != null;
 
@@ -227,7 +227,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     try {
       final bytes = base64Decode(personState.base64Image!);
-      final result = await Share.shareXFiles(
+      await Share.shareXFiles(
         [
           XFile.fromData(bytes,
               name: 'virtual_try_on.png', mimeType: 'image/png')
@@ -235,13 +235,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         subject: 'Создано в Виртуальной примерочной!',
       );
 
-      if (result.status == ShareResultStatus.success && mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Изображение успешно отправлено'),
+          const SnackBar(
+            content: Text('Изображение отправлено'),
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             backgroundColor: Colors.green,
           ),
         );
@@ -276,7 +274,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _deletePersonImage() {
-    setState(() => _isFabOpen = false);
+    ref.read(fabStateProvider.notifier).state = false;
     ref.read(personImageProvider.notifier).reset();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -303,6 +301,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final personState = ref.watch(personImageProvider);
     final selectedItems = ref.watch(selectedItemsProvider);
+    final isFabOpen = ref.watch(fabStateProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -340,72 +339,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           if (_isProcessing || personState.isLoading) const LoadingOverlay(),
         ],
       ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (_isFabOpen) ...[
-            if (personState.base64Image != null) ...[
-              FloatingActionButton(
-                heroTag: 'delete',
-                mini: true,
-                backgroundColor: Colors.red,
-                onPressed: _deletePersonImage,
-                child: const Icon(Icons.delete_outline, color: Colors.white),
-              ),
-              const SizedBox(height: 12),
-              FloatingActionButton(
-                heroTag: 'save',
-                mini: true,
-                backgroundColor: Colors.orange,
-                onPressed: _saveToGallery,
-                child: const Icon(Icons.save_alt, color: Colors.white),
-              ),
-              const SizedBox(height: 12),
-              FloatingActionButton(
-                heroTag: 'share',
-                mini: true,
-                backgroundColor: Colors.teal,
-                onPressed: _shareImage,
-                child: const Icon(Icons.share, color: Colors.white),
-              ),
-              const SizedBox(height: 12),
-            ],
-            FloatingActionButton(
-              heroTag: 'ai',
-              mini: true,
-              backgroundColor: Colors.purple,
-              onPressed: _showGeneratePersonDialog,
-              child: const Icon(Icons.auto_awesome, color: Colors.white),
-            ),
-            const SizedBox(height: 12),
-            FloatingActionButton(
-              heroTag: 'camera',
-              mini: true,
-              backgroundColor: Colors.blue,
-              onPressed: _showCameraOptions,
-              child: const Icon(Icons.camera_alt, color: Colors.white),
-            ),
-            const SizedBox(height: 12),
-            FloatingActionButton(
-              heroTag: 'upload',
-              mini: true,
-              backgroundColor: Colors.green,
-              onPressed: _pickPersonImage,
-              child: const Icon(Icons.photo_library, color: Colors.white),
-            ),
-            const SizedBox(height: 12),
-          ],
-          FloatingActionButton(
-            onPressed: () {
-              setState(() => _isFabOpen = !_isFabOpen);
-            },
-            child: AnimatedRotation(
-              turns: _isFabOpen ? 0.125 : 0,
-              duration: const Duration(milliseconds: 200),
-              child: Icon(_isFabOpen ? Icons.close : Icons.add),
-            ),
-          ),
-        ],
+      floatingActionButton: _HomeFAB(
+        isFabOpen: isFabOpen,
+        hasPersonImage: personState.base64Image != null,
+        onDeletePressed: _deletePersonImage,
+        onSavePressed: _saveToGallery,
+        onSharePressed: _shareImage,
+        onAIPressed: _showGeneratePersonDialog,
+        onCameraPressed: _showCameraOptions,
+        onUploadPressed: _pickPersonImage,
+        onToggleFAB: () {
+          ref.read(fabStateProvider.notifier).state = !isFabOpen;
+        },
       ),
     );
   }
@@ -508,5 +453,122 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
       ),
     );
+  }
+}
+
+// Виджет FAB для главного экрана
+class _HomeFAB extends StatelessWidget {
+  final bool isFabOpen;
+  final bool hasPersonImage;
+  final VoidCallback onDeletePressed;
+  final VoidCallback onSavePressed;
+  final VoidCallback onSharePressed;
+  final VoidCallback onAIPressed;
+  final VoidCallback onCameraPressed;
+  final VoidCallback onUploadPressed;
+  final VoidCallback onToggleFAB;
+
+  const _HomeFAB({
+    required this.isFabOpen,
+    required this.hasPersonImage,
+    required this.onDeletePressed,
+    required this.onSavePressed,
+    required this.onSharePressed,
+    required this.onAIPressed,
+    required this.onCameraPressed,
+    required this.onUploadPressed,
+    required this.onToggleFAB,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isFabOpen) ...[
+          if (hasPersonImage) ...[
+            _HomeFABButton(
+              heroTag: 'delete',
+              backgroundColor: Colors.red,
+              icon: Icons.delete_outline,
+              onPressed: onDeletePressed,
+            ),
+            const SizedBox(height: 12),
+            _HomeFABButton(
+              heroTag: 'save',
+              backgroundColor: Colors.orange,
+              icon: Icons.save_alt,
+              onPressed: onSavePressed,
+            ),
+            const SizedBox(height: 12),
+            _HomeFABButton(
+              heroTag: 'share',
+              backgroundColor: Colors.teal,
+              icon: Icons.share,
+              onPressed: onSharePressed,
+            ),
+            const SizedBox(height: 12),
+          ],
+          _HomeFABButton(
+            heroTag: 'ai',
+            backgroundColor: Colors.purple,
+            icon: Icons.auto_awesome,
+            onPressed: onAIPressed,
+          ),
+          const SizedBox(height: 12),
+          _HomeFABButton(
+            heroTag: 'camera',
+            backgroundColor: Colors.blue,
+            icon: Icons.camera_alt,
+            onPressed: onCameraPressed,
+          ),
+          const SizedBox(height: 12),
+          _HomeFABButton(
+            heroTag: 'upload',
+            backgroundColor: Colors.green,
+            icon: Icons.photo_library,
+            onPressed: onUploadPressed,
+          ),
+          const SizedBox(height: 12),
+        ],
+        FloatingActionButton(
+          onPressed: onToggleFAB,
+          child: AnimatedRotation(
+            turns: isFabOpen ? 0.125 : 0,
+            duration: const Duration(milliseconds: 200),
+            child: Icon(isFabOpen ? Icons.close : Icons.add),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Маленькая кнопка FAB для главного экрана
+class _HomeFABButton extends StatelessWidget {
+  final String heroTag;
+  final Color backgroundColor;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const _HomeFABButton({
+    required this.heroTag,
+    required this.backgroundColor,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      heroTag: heroTag,
+      mini: true,
+      backgroundColor: backgroundColor,
+      onPressed: onPressed,
+      child: Icon(icon, color: Colors.white),
+    ).animate().fadeIn(duration: 200.ms).scale(
+          begin: const Offset(0.5, 0.5),
+          duration: 200.ms,
+        );
   }
 }

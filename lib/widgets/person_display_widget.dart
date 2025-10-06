@@ -26,11 +26,15 @@ class _PersonDisplayWidgetState extends ConsumerState<PersonDisplayWidget> {
 
     return DragTarget<String>(
       onWillAcceptWithDetails: (details) {
-        setState(() => _isDraggingOver = true);
+        if (!_isDraggingOver) {
+          setState(() => _isDraggingOver = true);
+        }
         return personState.base64Image != null;
       },
       onLeave: (_) {
-        setState(() => _isDraggingOver = false);
+        if (_isDraggingOver) {
+          setState(() => _isDraggingOver = false);
+        }
       },
       onAcceptWithDetails: (details) {
         setState(() => _isDraggingOver = false);
@@ -47,7 +51,7 @@ class _PersonDisplayWidgetState extends ConsumerState<PersonDisplayWidget> {
             borderRadius: BorderRadius.circular(16),
             border: _isDraggingOver
                 ? Border.all(
-                    color: Colors.blue.withOpacity(0.8),
+                    color: Colors.blue.withValues(alpha: 0.8),
                     width: 3,
                   )
                 : null,
@@ -55,17 +59,23 @@ class _PersonDisplayWidgetState extends ConsumerState<PersonDisplayWidget> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: personState.isLoading
-                ? _buildLoadingState()
+                ? const _LoadingState()
                 : personState.base64Image != null
-                    ? _buildImageState(personState.base64Image!)
-                    : _buildPlaceholderState(),
+                    ? _ImageState(base64Image: personState.base64Image!)
+                    : const _PlaceholderState(),
           ),
         );
       },
     );
   }
+}
 
-  Widget _buildLoadingState() {
+// Виджет состояния загрузки
+class _LoadingState extends StatelessWidget {
+  const _LoadingState();
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -89,15 +99,31 @@ class _PersonDisplayWidgetState extends ConsumerState<PersonDisplayWidget> {
       ),
     );
   }
+}
 
-  Widget _buildImageState(String base64Image) {
+// Виджет для отображения изображения
+class _ImageState extends StatelessWidget {
+  final String base64Image;
+
+  const _ImageState({required this.base64Image});
+
+  @override
+  Widget build(BuildContext context) {
     return Image.memory(
       base64Decode(base64Image),
       fit: BoxFit.cover,
+      gaplessPlayback: true,
+      cacheWidth: 800,
     ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.9, 0.9));
   }
+}
 
-  Widget _buildPlaceholderState() {
+// Виджет placeholder состояния
+class _PlaceholderState extends StatelessWidget {
+  const _PlaceholderState();
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

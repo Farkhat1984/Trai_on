@@ -20,8 +20,8 @@ class WardrobeGridWidget extends ConsumerWidget {
         height: 200,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: Colors.grey.withOpacity(0.05),
-          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+          color: Colors.grey.withValues(alpha: 0.05),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
         ),
         child: Center(
           child: Column(
@@ -71,7 +71,10 @@ class WardrobeGridWidget extends ConsumerWidget {
           onDelete: () {
             ref.read(wardrobeProvider.notifier).removeClothingItem(item.id);
           },
-        ).animate().fadeIn(delay: (index * 50).ms).scale(begin: const Offset(0.8, 0.8));
+        )
+            .animate()
+            .fadeIn(delay: (index * 50).ms)
+            .scale(begin: const Offset(0.8, 0.8));
       },
     );
   }
@@ -133,13 +136,14 @@ class _ClothingItemCardState extends State<_ClothingItemCard> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: _isHovered ? Colors.blue : Colors.grey.withOpacity(0.3),
+            color:
+                _isHovered ? Colors.blue : Colors.grey.withValues(alpha: 0.3),
             width: _isHovered ? 2 : 1,
           ),
           boxShadow: _isHovered
               ? [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.2),
+                    color: Colors.blue.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -170,7 +174,7 @@ class _ClothingItemCardState extends State<_ClothingItemCard> {
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.9),
+                        color: Colors.red.withValues(alpha: 0.9),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -180,9 +184,13 @@ class _ClothingItemCardState extends State<_ClothingItemCard> {
                       ),
                     ),
                   ),
-                ).animate().fadeIn(duration: 200.ms).scale(begin: const Offset(0.5, 0.5)),
+                )
+                    .animate()
+                    .fadeIn(duration: 200.ms)
+                    .scale(begin: const Offset(0.5, 0.5)),
               ),
-            if (widget.item.description != null && widget.item.description!.isNotEmpty)
+            if (widget.item.description != null &&
+                widget.item.description!.isNotEmpty)
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -199,7 +207,7 @@ class _ClothingItemCardState extends State<_ClothingItemCard> {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withOpacity(0.7),
+                        Colors.black.withValues(alpha: 0.7),
                       ],
                     ),
                   ),

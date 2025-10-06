@@ -25,96 +25,24 @@ class ClothingCardWidget extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (item.description != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  item.description!,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.edit, color: Colors.orange),
-              ),
-              title: const Text('Редактировать название'),
-              onTap: () {
-                Navigator.pop(context);
-                _showEditDialog(context, ref);
-              },
-            ),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.save_alt, color: Colors.green),
-              ),
-              title: const Text('Сохранить в галерею'),
-              onTap: () {
-                Navigator.pop(context);
-                onSave();
-              },
-            ),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child:
-                    const Icon(Icons.check_circle_outline, color: Colors.blue),
-              ),
-              title: const Text('Примерить'),
-              onTap: () {
-                Navigator.pop(context);
-                onDoubleTap();
-              },
-            ),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.delete_outline, color: Colors.red),
-              ),
-              title: const Text('Удалить из гардероба'),
-              onTap: () {
-                Navigator.pop(context);
-                onDelete();
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
+      builder: (context) => _ClothingActionsSheet(
+        item: item,
+        onEdit: () {
+          Navigator.pop(context);
+          _showEditDialog(context, ref);
+        },
+        onSave: () {
+          Navigator.pop(context);
+          onSave();
+        },
+        onTryOn: () {
+          Navigator.pop(context);
+          onDoubleTap();
+        },
+        onDelete: () {
+          Navigator.pop(context);
+          onDelete();
+        },
       ),
     );
   }
@@ -144,9 +72,9 @@ class ClothingCardWidget extends ConsumerWidget {
             onPressed: () {
               final newDescription = controller.text.trim();
               ref.read(wardrobeProvider.notifier).updateClothingDescription(
-                item.id,
-                newDescription.isEmpty ? null : newDescription,
-              );
+                    item.id,
+                    newDescription.isEmpty ? null : newDescription,
+                  );
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -181,6 +109,8 @@ class ClothingCardWidget extends ConsumerWidget {
               child: Image.memory(
                 base64Decode(item.base64Image),
                 fit: BoxFit.cover,
+                gaplessPlayback: true,
+                cacheWidth: 400,
               ),
             ),
           ],
@@ -189,6 +119,112 @@ class ClothingCardWidget extends ConsumerWidget {
             begin: const Offset(0.9, 0.9),
             duration: 300.ms,
           ),
+    );
+  }
+}
+
+// Выделенный виджет для Action Sheet
+class _ClothingActionsSheet extends StatelessWidget {
+  final ClothingItem item;
+  final VoidCallback onEdit;
+  final VoidCallback onSave;
+  final VoidCallback onTryOn;
+  final VoidCallback onDelete;
+
+  const _ClothingActionsSheet({
+    required this.item,
+    required this.onEdit,
+    required this.onSave,
+    required this.onTryOn,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (item.description != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                item.description!,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          const SizedBox(height: 16),
+          _ActionTile(
+            icon: Icons.edit,
+            title: 'Редактировать название',
+            color: Colors.orange,
+            onTap: onEdit,
+          ),
+          _ActionTile(
+            icon: Icons.save_alt,
+            title: 'Сохранить в галерею',
+            color: Colors.green,
+            onTap: onSave,
+          ),
+          _ActionTile(
+            icon: Icons.check_circle_outline,
+            title: 'Примерить',
+            color: Colors.blue,
+            onTap: onTryOn,
+          ),
+          _ActionTile(
+            icon: Icons.delete_outline,
+            title: 'Удалить из гардероба',
+            color: Colors.red,
+            onTap: onDelete,
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+// Виджет для одного пункта действия
+class _ActionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ActionTile({
+    required this.icon,
+    required this.title,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: color),
+      ),
+      title: Text(title),
+      onTap: onTap,
     );
   }
 }
