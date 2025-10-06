@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/sound_service.dart';
 
-/// Обёртка для FloatingActionButton с звуковым эффектом клика
+/// Обёртка для FloatingActionButton с нативным звуком (без кастомного)
 class SoundFloatingActionButton extends StatelessWidget {
   final VoidCallback onPressed;
   final Widget child;
@@ -24,10 +24,8 @@ class SoundFloatingActionButton extends StatelessWidget {
       heroTag: heroTag,
       mini: mini ?? false,
       backgroundColor: backgroundColor,
-      onPressed: () {
-        SoundService().playClick();
-        onPressed();
-      },
+      // enableFeedback по умолчанию true - используем нативный звук
+      onPressed: onPressed,
       child: child,
     );
   }
@@ -47,8 +45,8 @@ class SoundElevatedButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
-        SoundService().playClick();
+      onPressed: () async {
+        await SoundService().playClick();
         onPressed();
       },
       child: child,
@@ -73,8 +71,8 @@ class SoundTextButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       style: style,
-      onPressed: () {
-        SoundService().playClick();
+      onPressed: () async {
+        await SoundService().playClick();
         onPressed();
       },
       child: child,
@@ -102,8 +100,9 @@ class SoundIconButton extends StatelessWidget {
     return IconButton(
       iconSize: iconSize,
       color: color,
-      onPressed: () {
-        SoundService().playClick();
+      enableFeedback: false, // Отключаем системные звуки
+      onPressed: () async {
+        await SoundService().playClick();
         onPressed();
       },
       icon: icon,

@@ -1,0 +1,60 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Virtual Try-On",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+
+  "home": "Home",
+  "wardrobe": "Wardrobe",
+  "shops": "Shops",
+  "settings": "Settings",
+
+  "tryOnVirtually": "Try on clothes virtually",
+  "signInWithGoogle": "Sign in with Google",
+  "signInWithApple": "Sign in with Apple",
+  "byContinuingYouAccept": "By continuing, you accept the terms of use\nand privacy policy",
+
+  "appearance": "Appearance",
+  "themeSettings": "Theme",
+  "lightTheme": "Light",
+  "darkTheme": "Dark",
+  "systemTheme": "System",
+
+  "sound": "Sound",
+  "soundEffects": "Sound effects",
+  "enabled": "Enabled",
+  "disabled": "Disabled",
+
+  "payments": "Payments",
+  "acquiring": "Acquiring",
+  "paymentSystemSettings": "Payment system settings",
+  "acquiringInDevelopment": "Acquiring settings (in development)",
+
+  "wardrobeTitle": "Wardrobe",
+  "itemsInWardrobe": "Items in wardrobe",
+  "clearWardrobe": "Clear wardrobe",
+  "clearWardrobeConfirm": "Clear wardrobe?",
+  "clearWardrobeMessage": "This action will delete all items from your wardrobe. This action cannot be undone.",
+  "cancel": "Cancel",
+  "clear": "Clear",
+  "wardrobeCleared": "Wardrobe cleared",
+
+  "about": "About",
+  "version": "Version: 1.0.0",
+  "aboutDescription": "Create a model from description or upload a photo, add clothes and try on a new look!",
+  "aiImageGeneration": "AI image generation",
+  "virtualTryOn": "Virtual try-on",
+  "personalWardrobe": "Personal wardrobe",
+
+  "language": "Language",
+  "languageSettings": "Language settings",
+  "english": "English",
+  "russian": "Russian",
+
+  "tryOnComplete": "Try-on complete!",
+  "errorOccurred": "An error occurred",
+  "googleSignInStub": "Sign in with Google (stub)",
+  "appleSignInStub": "Sign in with Apple (stub)"
+}

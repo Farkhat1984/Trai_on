@@ -1,0 +1,57 @@
+{
+  "@@locale": "ru",
+
+  "appTitle": "Виртуальная примерочная",
+
+  "home": "Главная",
+  "wardrobe": "Гардероб",
+  "shops": "Магазины",
+  "settings": "Настройки",
+
+  "tryOnVirtually": "Примерьте одежду виртуально",
+  "signInWithGoogle": "Войти через Google",
+  "signInWithApple": "Войти через Apple",
+  "byContinuingYouAccept": "Продолжая, вы принимаете условия использования\nи политику конфиденциальности",
+
+  "appearance": "Внешний вид",
+  "themeSettings": "Тема оформления",
+  "lightTheme": "Светлая",
+  "darkTheme": "Темная",
+  "systemTheme": "Системная",
+
+  "sound": "Звук",
+  "soundEffects": "Звуковые эффекты",
+  "enabled": "Включены",
+  "disabled": "Выключены",
+
+  "payments": "Платежи",
+  "acquiring": "Эквайринг",
+  "paymentSystemSettings": "Настройки платежной системы",
+  "acquiringInDevelopment": "Настройки эквайринга (в разработке)",
+
+  "wardrobeTitle": "Гардероб",
+  "itemsInWardrobe": "Предметов в гардеробе",
+  "clearWardrobe": "Очистить гардероб",
+  "clearWardrobeConfirm": "Очистить гардероб?",
+  "clearWardrobeMessage": "Это действие удалит все предметы из вашего гардероба. Это действие нельзя отменить.",
+  "cancel": "Отмена",
+  "clear": "Очистить",
+  "wardrobeCleared": "Гардероб очищен",
+
+  "about": "О приложении",
+  "version": "Версия: 1.0.0",
+  "aboutDescription": "Создайте модель по описанию или загрузите фото, добавьте одежду и примерьте новый образ!",
+  "aiImageGeneration": "AI-генерация изображений",
+  "virtualTryOn": "Виртуальная примерка одежды",
+  "personalWardrobe": "Персональный гардероб",
+
+  "language": "Язык",
+  "languageSettings": "Настройки языка",
+  "english": "Английский",
+  "russian": "Русский",
+
+  "tryOnComplete": "Примерка завершена!",
+  "errorOccurred": "Произошла ошибка",
+  "googleSignInStub": "Вход через Google (заглушка)",
+  "appleSignInStub": "Вход через Apple (заглушка)"
+}

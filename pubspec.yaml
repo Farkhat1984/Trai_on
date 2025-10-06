@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # UI & Design
   cupertino_icons: ^1.0.6
@@ -16,6 +18,7 @@ dependencies:
   flutter_animate: ^4.5.0
   shimmer: ^3.0.0
   lottie: ^3.0.0
+  intl: ^0.20.2
 
   # State Management
   flutter_riverpod: ^2.6.1
@@ -53,7 +56,6 @@ dependencies:
 
   # Utils
   uuid: ^4.5.1
-  intl: ^0.20.2
   logger: ^2.4.0
 
 dev_dependencies:
@@ -67,10 +69,12 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
 
   assets:
     - assets/icons/
     - assets/sounds/
+    - assets/images/
 
 flutter_launcher_icons:
   android: true

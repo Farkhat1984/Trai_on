@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/theme_provider.dart';
 import '../providers/wardrobe_provider.dart';
 import '../providers/sound_provider.dart';
+import '../l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -12,10 +13,11 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final soundEnabled = ref.watch(soundEnabledProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Настройки'),
+        title: Text(l10n.settings),
         centerTitle: true,
         elevation: 0,
       ),
@@ -24,35 +26,43 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           _buildSection(
             context,
-            title: 'Внешний вид',
+            title: l10n.appearance,
             children: [
-              _buildThemeCard(context, ref, themeMode),
+              _buildThemeCard(context, ref, themeMode, l10n),
             ],
           ),
           const SizedBox(height: 24),
           _buildSection(
             context,
-            title: 'Звук',
+            title: l10n.sound,
             children: [
-              _buildSoundCard(context, ref, soundEnabled),
+              _buildSoundCard(context, ref, soundEnabled, l10n),
             ],
           ),
           const SizedBox(height: 24),
           _buildSection(
             context,
-            title: 'Гардероб',
+            title: l10n.payments,
             children: [
-              _buildWardrobeStatsCard(context, ref),
+              _buildAcquiringCard(context, l10n),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSection(
+            context,
+            title: l10n.wardrobeTitle,
+            children: [
+              _buildWardrobeStatsCard(context, ref, l10n),
               const SizedBox(height: 12),
-              _buildClearWardrobeCard(context, ref),
+              _buildClearWardrobeCard(context, ref, l10n),
             ],
           ),
           const SizedBox(height: 24),
           _buildSection(
             context,
-            title: 'О приложении',
+            title: l10n.about,
             children: [
-              _buildAboutCard(context),
+              _buildAboutCard(context, l10n),
             ],
           ),
         ],
@@ -83,8 +93,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildThemeCard(
-      BuildContext context, WidgetRef ref, ThemeMode currentMode) {
+  Widget _buildThemeCard(BuildContext context, WidgetRef ref,
+      ThemeMode currentMode, AppLocalizations l10n) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -97,7 +107,7 @@ class SettingsScreen extends ConsumerWidget {
                     color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 12),
                 Text(
-                  'Тема оформления',
+                  l10n.themeSettings,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -108,7 +118,7 @@ class SettingsScreen extends ConsumerWidget {
             _buildThemeOption(
               context,
               ref,
-              title: 'Светлая',
+              title: l10n.lightTheme,
               icon: Icons.light_mode,
               mode: ThemeMode.light,
               isSelected: currentMode == ThemeMode.light,
@@ -117,7 +127,7 @@ class SettingsScreen extends ConsumerWidget {
             _buildThemeOption(
               context,
               ref,
-              title: 'Темная',
+              title: l10n.darkTheme,
               icon: Icons.dark_mode,
               mode: ThemeMode.dark,
               isSelected: currentMode == ThemeMode.dark,
@@ -126,7 +136,7 @@ class SettingsScreen extends ConsumerWidget {
             _buildThemeOption(
               context,
               ref,
-              title: 'Системная',
+              title: l10n.systemTheme,
               icon: Icons.brightness_auto,
               mode: ThemeMode.system,
               isSelected: currentMode == ThemeMode.system,
@@ -137,8 +147,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSoundCard(
-      BuildContext context, WidgetRef ref, bool soundEnabled) {
+  Widget _buildSoundCard(BuildContext context, WidgetRef ref, bool soundEnabled,
+      AppLocalizations l10n) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -154,14 +164,14 @@ class SettingsScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Звуковые эффекты',
+                    l10n.soundEffects,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    soundEnabled ? 'Включены' : 'Выключены',
+                    soundEnabled ? l10n.enabled : l10n.disabled,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey[600],
                         ),
@@ -176,6 +186,58 @@ class SettingsScreen extends ConsumerWidget {
               },
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAcquiringCard(BuildContext context, AppLocalizations l10n) {
+    return Card(
+      child: InkWell(
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.acquiringInDevelopment),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(
+                Icons.credit_card,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.acquiring,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.paymentSystemSettings,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: Colors.grey[400],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -238,7 +300,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildWardrobeStatsCard(BuildContext context, WidgetRef ref) {
+  Widget _buildWardrobeStatsCard(
+      BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final wardrobeItems = ref.watch(wardrobeProvider);
 
     return Card(
@@ -253,7 +316,7 @@ class SettingsScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Предметов в гардеробе',
+                    l10n.itemsInWardrobe,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 4),
@@ -273,14 +336,15 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildClearWardrobeCard(BuildContext context, WidgetRef ref) {
+  Widget _buildClearWardrobeCard(
+      BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final wardrobeItems = ref.watch(wardrobeProvider);
 
     return Card(
       child: InkWell(
         onTap: wardrobeItems.isEmpty
             ? null
-            : () => _showClearWardrobeDialog(context, ref),
+            : () => _showClearWardrobeDialog(context, ref, l10n),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -293,7 +357,7 @@ class SettingsScreen extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Очистить гардероб',
+                  l10n.clearWardrobe,
                   style: TextStyle(
                     color: wardrobeItems.isEmpty ? Colors.grey : Colors.red,
                     fontWeight: FontWeight.w600,
@@ -311,7 +375,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAboutCard(BuildContext context) {
+  Widget _buildAboutCard(BuildContext context, AppLocalizations l10n) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -324,7 +388,7 @@ class SettingsScreen extends ConsumerWidget {
                     color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 12),
                 Text(
-                  'Виртуальная примерочная',
+                  l10n.appTitle,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -333,13 +397,12 @@ class SettingsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Версия: 1.0.0',
+              l10n.version,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'Создайте модель по описанию или загрузите фото, '
-              'добавьте одежду и примерьте новый образ!',
+              l10n.aboutDescription,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -350,19 +413,19 @@ class SettingsScreen extends ConsumerWidget {
             _buildInfoRow(
               context,
               icon: Icons.stars,
-              text: 'AI-генерация изображений',
+              text: l10n.aiImageGeneration,
             ),
             const SizedBox(height: 12),
             _buildInfoRow(
               context,
               icon: Icons.auto_fix_high,
-              text: 'Виртуальная примерка одежды',
+              text: l10n.virtualTryOn,
             ),
             const SizedBox(height: 12),
             _buildInfoRow(
               context,
               icon: Icons.photo_library,
-              text: 'Персональный гардероб',
+              text: l10n.personalWardrobe,
             ),
           ],
         ),
@@ -388,30 +451,28 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showClearWardrobeDialog(BuildContext context, WidgetRef ref) {
+  void _showClearWardrobeDialog(
+      BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Очистить гардероб?'),
-        content: const Text(
-          'Это действие удалит все предметы из вашего гардероба. '
-          'Это действие нельзя отменить.',
-        ),
+        title: Text(l10n.clearWardrobeConfirm),
+        content: Text(l10n.clearWardrobeMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Отмена'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               ref.read(wardrobeProvider.notifier).clearWardrobe();
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Гардероб очищен')),
+                SnackBar(content: Text(l10n.wardrobeCleared)),
               );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Очистить'),
+            child: Text(l10n.clear),
           ),
         ],
       ),

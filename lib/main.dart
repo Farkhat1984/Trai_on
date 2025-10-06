@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/wardrobe_screen.dart';
 import 'screens/shop_screen.dart';
@@ -10,7 +12,9 @@ import 'screens/settings_screen.dart';
 import 'providers/theme_provider.dart';
 import 'providers/navigation_provider.dart';
 import 'providers/selected_items_provider.dart';
+import 'providers/locale_provider.dart';
 import 'services/sound_service.dart';
+import 'l10n/app_localizations.dart';
 
 // GlobalKey для иконки корзины (используется для flying animation)
 final GlobalKey cartIconKey = GlobalKey();
@@ -48,6 +52,7 @@ class VirtualTryOnApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
 
     return MaterialApp(
       title: 'Virtual Try-On',
@@ -55,7 +60,22 @@ class VirtualTryOnApp extends ConsumerWidget {
       themeMode: themeMode,
       theme: _buildLightTheme(),
       darkTheme: _buildDarkTheme(),
-      home: const MainNavigator(),
+      locale: locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('ru'),
+      ],
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/home': (context) => const MainNavigator(),
+      },
     );
   }
 
