@@ -169,7 +169,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content:
-                  Text('${item.description ?? "Одежда"} добавлена в корзину'),
+                  Text('${item.description ?? "Одежда"} добавлено на главную'),
               duration: const Duration(milliseconds: 800),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
@@ -221,8 +221,6 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Гардероб'),
-        centerTitle: true,
         elevation: 0,
       ),
       body: Stack(
