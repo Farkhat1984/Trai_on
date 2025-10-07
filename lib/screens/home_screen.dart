@@ -320,8 +320,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Виртуальная примерочная'),
-        centerTitle: true,
         elevation: 0,
       ),
       body: Stack(
@@ -420,14 +418,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildPersonSection(
       PersonImageState personState, BoxConstraints constraints) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: PersonDisplayWidget(
-          targetKey: _modelKey,
-          onClothingDropped: _applyClothing,
-        ).animate().fadeIn(duration: 300.ms),
-      ),
+    return SizedBox(
+      width: double.infinity,
+      height: constraints.maxHeight,
+      child: PersonDisplayWidget(
+        targetKey: _modelKey,
+        onClothingDropped: _applyClothing,
+      ).animate().fadeIn(duration: 300.ms),
     );
   }
 

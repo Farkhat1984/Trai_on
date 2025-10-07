@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Сервис для создания анимации "летящего" виджета
 /// Использует Overlay для отображения виджета поверх всех элементов
@@ -95,13 +96,24 @@ class _FlyingWidgetState extends State<_FlyingWidget>
   late Animation<Offset> _positionAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
-  late final Uint8List _imageBytes;
+  Uint8List? _imageBytes;
+  bool _isAssetPath = false;
 
   @override
   void initState() {
     super.initState();
 
-    _imageBytes = base64Decode(widget.imageBase64);
+    // Check if it's an asset path or base64 string
+    if (widget.imageBase64.startsWith('assets/')) {
+      _isAssetPath = true;
+      _loadAssetImage();
+    } else {
+      try {
+        _imageBytes = base64Decode(widget.imageBase64);
+      } catch (e) {
+        _imageBytes = null;
+      }
+    }
 
     _controller = AnimationController(
       duration: widget.duration,
@@ -146,6 +158,19 @@ class _FlyingWidgetState extends State<_FlyingWidget>
     });
   }
 
+  Future<void> _loadAssetImage() async {
+    try {
+      final data = await rootBundle.load(widget.imageBase64);
+      if (mounted) {
+        setState(() {
+          _imageBytes = data.buffer.asUint8List();
+        });
+      }
+    } catch (e) {
+      // If loading fails, keep _imageBytes as null
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -184,11 +209,28 @@ class _FlyingWidgetState extends State<_FlyingWidget>
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.memory(
-                    _imageBytes,
-                    fit: BoxFit.cover,
-                    gaplessPlayback: true,
-                  ),
+                  child: _isAssetPath
+                      ? Image.asset(
+                          widget.imageBase64,
+                          fit: BoxFit.cover,
+                          gaplessPlayback: true,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.broken_image),
+                            );
+                          },
+                        )
+                      : _imageBytes != null
+                          ? Image.memory(
+                              _imageBytes!,
+                              fit: BoxFit.cover,
+                              gaplessPlayback: true,
+                            )
+                          : Container(
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.broken_image),
+                            ),
                 ),
               ),
             ),

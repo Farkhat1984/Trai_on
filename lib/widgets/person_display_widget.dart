@@ -69,8 +69,7 @@ class _PersonDisplayWidgetState extends ConsumerState<PersonDisplayWidget> {
               key: widget.targetKey,
               duration: const Duration(milliseconds: 300),
               constraints: const BoxConstraints(
-                minHeight: 400,
-                maxHeight: 600,
+                minHeight: double.infinity,
               ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
@@ -152,6 +151,8 @@ class _ImageState extends StatelessWidget {
     return Image.memory(
       base64Decode(base64Image),
       fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
       gaplessPlayback: true,
       cacheWidth: 800,
     ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.9, 0.9));

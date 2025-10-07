@@ -17,8 +17,6 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.settings),
-        centerTitle: true,
         elevation: 0,
       ),
       body: ListView(

@@ -75,6 +75,7 @@ flutter:
     - assets/icons/
     - assets/sounds/
     - assets/images/
+    - assets/images/shop/
 
 flutter_launcher_icons:
   android: true

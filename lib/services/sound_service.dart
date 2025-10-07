@@ -52,17 +52,35 @@ class SoundService {
 
   /// Воспроизвести звук клика кнопки
   Future<void> playClick() async {
-    if (!_soundsEnabled || !_isInitialized) return;
+    if (!_soundsEnabled) {
+      debugPrint('Click sound: sounds disabled');
+      return;
+    }
+
+    if (!_isInitialized) {
+      debugPrint('Click sound: service not initialized');
+      return;
+    }
+
+    if (_clickPlayers.isEmpty) {
+      debugPrint('Click sound: no players available');
+      return;
+    }
 
     try {
       // Находим свободный плеер или тот, который уже закончил играть
-      final player = _clickPlayers.firstWhere(
-        (p) => !p.playing,
-        orElse: () => _clickPlayers.first,
-      );
+      AudioPlayer? player;
+      try {
+        player = _clickPlayers.firstWhere((p) => !p.playing);
+      } catch (e) {
+        player = _clickPlayers.first;
+      }
 
+      await player.stop(); // Останавливаем если играет
       await player.seek(Duration.zero);
-      await player.play();
+      await player.setVolume(1.0); // Устанавливаем полную громкость
+      player.play(); // Не ждем завершения для быстрого отклика
+      debugPrint('Click sound: played successfully');
     } catch (error) {
       debugPrint('Click sound error: $error');
     }

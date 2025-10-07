@@ -28,13 +28,23 @@ class WardrobeNotifier extends StateNotifier<List<ClothingItem>> {
   Future<void> _loadWardrobe() async {
     final box = Hive.box(AppConstants.hiveBoxWardrobe);
     final items = <ClothingItem>[];
+    final invalidKeys = <dynamic>[];
 
     for (var key in box.keys) {
       try {
         final data = box.get(key) as Map<dynamic, dynamic>;
+        final base64Image = data['base64Image'] as String;
+
+        // Проверяем, является ли base64Image asset путем
+        if (base64Image.startsWith('assets/')) {
+          // Помечаем для удаления
+          invalidKeys.add(key);
+          continue;
+        }
+
         items.add(ClothingItem(
           id: data['id'] as String,
-          base64Image: data['base64Image'] as String,
+          base64Image: base64Image,
           createdAt: DateTime.parse(data['createdAt'] as String),
           description: data['description'] as String?,
         ));
@@ -42,6 +52,11 @@ class WardrobeNotifier extends StateNotifier<List<ClothingItem>> {
         // Пропускаем поврежденные элементы
         continue;
       }
+    }
+
+    // Удаляем некорректные элементы из Hive
+    for (var key in invalidKeys) {
+      await box.delete(key);
     }
 
     items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -107,5 +122,26 @@ class WardrobeNotifier extends StateNotifier<List<ClothingItem>> {
     final box = Hive.box(AppConstants.hiveBoxWardrobe);
     await box.clear();
     state = [];
+  }
+
+  /// Удаляет некорректные элементы (с asset путями вместо base64)
+  Future<void> removeInvalidItems() async {
+    final box = Hive.box(AppConstants.hiveBoxWardrobe);
+    final invalidIds = <String>[];
+
+    for (var item in state) {
+      // Проверяем, является ли base64Image asset путем
+      if (item.base64Image.startsWith('assets/')) {
+        invalidIds.add(item.id);
+      }
+    }
+
+    // Удаляем из Hive
+    for (var id in invalidIds) {
+      await box.delete(id);
+    }
+
+    // Обновляем состояние
+    state = state.where((item) => !invalidIds.contains(item.id)).toList();
   }
 }
