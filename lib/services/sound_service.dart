@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
+import '../constants/app_constants.dart';
 
 /// Сервис для управления звуковыми эффектами
 class SoundService {
@@ -19,17 +20,19 @@ class SoundService {
     if (_isInitialized) return;
 
     try {
-      // Создаём пул плееров для звука клика (3 плеера для одновременных кликов)
-      for (int i = 0; i < 3; i++) {
+      // Создаём пул плееров для звука клика
+      for (int i = 0; i < AppConstants.soundPoolClickPlayers; i++) {
         final player = AudioPlayer();
-        await player.setAsset('assets/sounds/click.wav');
+        await player.setAsset(AppConstants.assetSoundClick);
         _clickPlayers.add(player);
       }
 
-      // Создаём плеер для звука полёта (1 плеер, т.к. анимация одна)
-      final flyingPlayer = AudioPlayer();
-      await flyingPlayer.setAsset('assets/sounds/whoosh.wav');
-      _flyingPlayers.add(flyingPlayer);
+      // Создаём плеер для звука полёта
+      for (int i = 0; i < AppConstants.soundPoolFlyingPlayers; i++) {
+        final flyingPlayer = AudioPlayer();
+        await flyingPlayer.setAsset(AppConstants.assetSoundWhoosh);
+        _flyingPlayers.add(flyingPlayer);
+      }
 
       _isInitialized = true;
     } catch (e) {
@@ -60,8 +63,8 @@ class SoundService {
 
       await player.seek(Duration.zero);
       await player.play();
-    } catch (e) {
-      debugPrint('Click sound error: $e');
+    } catch (error) {
+      debugPrint('Click sound error: $error');
     }
   }
 
@@ -77,7 +80,7 @@ class SoundService {
       await player.seek(Duration.zero);
 
       // Устанавливаем начальную громкость
-      await player.setVolume(0.8);
+      await player.setVolume(AppConstants.soundInitialVolume);
 
       // Запускаем воспроизведение
       await player.play();
@@ -86,22 +89,22 @@ class SoundService {
       if (duration != null) {
         _fadeOutVolume(player, duration);
       }
-    } catch (e) {
-      debugPrint('Flying sound error: $e');
+    } catch (error) {
+      debugPrint('Flying sound error: $error');
     }
   }
 
   /// Плавное уменьшение громкости
   Future<void> _fadeOutVolume(AudioPlayer player, Duration duration) async {
-    const steps = 20; // количество шагов уменьшения громкости
+    const steps = AppConstants.soundFadeOutSteps;
     final stepDuration = duration.inMilliseconds ~/ steps;
 
     for (int i = 1; i <= steps; i++) {
       await Future.delayed(Duration(milliseconds: stepDuration));
-      final volume = 0.8 * (1 - (i / steps));
+      final volume = AppConstants.soundInitialVolume * (1 - (i / steps));
       try {
         await player.setVolume(volume);
-      } catch (e) {
+      } catch (error) {
         break;
       }
     }

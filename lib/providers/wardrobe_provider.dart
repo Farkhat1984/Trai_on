@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../models/clothing_item.dart';
+import '../constants/app_constants.dart';
 
 final wardrobeProvider =
     StateNotifierProvider<WardrobeNotifier, List<ClothingItem>>((ref) {
@@ -25,7 +26,7 @@ class WardrobeNotifier extends StateNotifier<List<ClothingItem>> {
   final _uuid = const Uuid();
 
   Future<void> _loadWardrobe() async {
-    final box = Hive.box('wardrobe');
+    final box = Hive.box(AppConstants.hiveBoxWardrobe);
     final items = <ClothingItem>[];
 
     for (var key in box.keys) {
@@ -37,7 +38,7 @@ class WardrobeNotifier extends StateNotifier<List<ClothingItem>> {
           createdAt: DateTime.parse(data['createdAt'] as String),
           description: data['description'] as String?,
         ));
-      } catch (e) {
+      } catch (error) {
         // Пропускаем поврежденные элементы
         continue;
       }
@@ -56,7 +57,7 @@ class WardrobeNotifier extends StateNotifier<List<ClothingItem>> {
       description: description,
     );
 
-    final box = Hive.box('wardrobe');
+    final box = Hive.box(AppConstants.hiveBoxWardrobe);
     await box.put(item.id, {
       'id': item.id,
       'base64Image': item.base64Image,
@@ -69,7 +70,7 @@ class WardrobeNotifier extends StateNotifier<List<ClothingItem>> {
   }
 
   Future<void> removeClothingItem(String id) async {
-    final box = Hive.box('wardrobe');
+    final box = Hive.box(AppConstants.hiveBoxWardrobe);
     await box.delete(id);
     // Оптимизация: используем where вместо создания нового списка вручную
     state = state.where((item) => item.id != id).toList();
@@ -80,7 +81,7 @@ class WardrobeNotifier extends StateNotifier<List<ClothingItem>> {
     if (index == -1) return;
 
     final item = state[index];
-    final box = Hive.box('wardrobe');
+    final box = Hive.box(AppConstants.hiveBoxWardrobe);
 
     await box.put(id, {
       'id': item.id,
@@ -103,7 +104,7 @@ class WardrobeNotifier extends StateNotifier<List<ClothingItem>> {
   }
 
   Future<void> clearWardrobe() async {
-    final box = Hive.box('wardrobe');
+    final box = Hive.box(AppConstants.hiveBoxWardrobe);
     await box.clear();
     state = [];
   }

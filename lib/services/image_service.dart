@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:gal/gal.dart';
+import '../constants/app_constants.dart';
+import '../models/app_exception.dart';
 
 class ImageService {
   final ImagePicker _picker = ImagePicker();
@@ -13,25 +15,30 @@ class ImageService {
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 1536, // Увеличено для лучшего качества генерации
-        maxHeight: 1536,
-        imageQuality: 90, // Увеличено качество
+        maxWidth: AppConstants.imageMaxWidth.toDouble(),
+        maxHeight: AppConstants.imageMaxHeight.toDouble(),
+        imageQuality: AppConstants.imageQuality,
       );
 
       if (image == null) return null;
 
       return await _convertToBase64(image.path);
-    } catch (e) {
-      throw Exception('Ошибка при выборе изображения: $e');
+    } catch (error) {
+      if (error is ImageException) rethrow;
+      throw ImageException(
+        message: 'Error picking image: $error',
+        userMessage: 'Failed to select image',
+        originalError: error,
+      );
     }
   }
 
   Future<List<String>> pickMultipleImagesFromGallery() async {
     try {
       final List<XFile> images = await _picker.pickMultiImage(
-        maxWidth: 1536, // Увеличено для лучшего качества
-        maxHeight: 1536,
-        imageQuality: 90,
+        maxWidth: AppConstants.imageMaxWidth.toDouble(),
+        maxHeight: AppConstants.imageMaxHeight.toDouble(),
+        imageQuality: AppConstants.imageQuality,
       );
 
       final List<String> base64Images = [];
@@ -43,8 +50,13 @@ class ImageService {
       }
 
       return base64Images;
-    } catch (e) {
-      throw Exception('Ошибка при выборе изображений: $e');
+    } catch (error) {
+      if (error is ImageException) rethrow;
+      throw ImageException(
+        message: 'Error picking multiple images: $error',
+        userMessage: 'Failed to select images',
+        originalError: error,
+      );
     }
   }
 
@@ -52,9 +64,9 @@ class ImageService {
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.camera,
-        maxWidth: 1536, // Увеличено для лучшего качества
-        maxHeight: 1536,
-        imageQuality: 90,
+        maxWidth: AppConstants.imageMaxWidth.toDouble(),
+        maxHeight: AppConstants.imageMaxHeight.toDouble(),
+        imageQuality: AppConstants.imageQuality,
         preferredCameraDevice:
             preferFrontCamera ? CameraDevice.front : CameraDevice.rear,
       );
@@ -62,8 +74,13 @@ class ImageService {
       if (image == null) return null;
 
       return await _convertToBase64(image.path);
-    } catch (e) {
-      throw Exception('Ошибка при съемке фото: $e');
+    } catch (error) {
+      if (error is ImageException) rethrow;
+      throw ImageException(
+        message: 'Error taking photo: $error',
+        userMessage: 'Failed to take photo',
+        originalError: error,
+      );
     }
   }
 
@@ -91,10 +108,10 @@ class ImageService {
         final Uint8List? compressedBytes =
             await FlutterImageCompress.compressWithFile(
           imageFile.absolute.path,
-          minWidth: 1280, // Увеличено для лучшей детализации
-          minHeight: 1280,
-          quality: 90, // Высокое качество для AI обработки
-          format: CompressFormat.png, // PNG сохраняет больше деталей
+          minWidth: AppConstants.imageCompressionMinWidth,
+          minHeight: AppConstants.imageCompressionMinHeight,
+          quality: AppConstants.imageCompressionQuality,
+          format: CompressFormat.png,
         );
 
         if (compressedBytes != null && compressedBytes.isNotEmpty) {
@@ -107,11 +124,16 @@ class ImageService {
       // Fallback: use original file bytes
       final bytes = await imageFile.readAsBytes();
       if (bytes.isEmpty) {
-        throw Exception('Файл изображения пуст');
+        throw ImageInvalidException();
       }
       return base64Encode(bytes);
-    } catch (e) {
-      throw Exception('Ошибка при конвертации изображения: $e');
+    } catch (error) {
+      if (error is ImageException) rethrow;
+      throw ImageException(
+        message: 'Error converting image: $error',
+        userMessage: 'Failed to process image',
+        originalError: error,
+      );
     }
   }
 
@@ -137,7 +159,7 @@ class ImageService {
       await file.writeAsBytes(imageBytes);
 
       // Save to gallery
-      await Gal.putImage(file.path, album: 'Virtual Try-On');
+      await Gal.putImage(file.path, album: AppConstants.galleryAlbumName);
 
       // Clean up temp file
       try {
@@ -145,8 +167,11 @@ class ImageService {
       } catch (_) {}
 
       return true;
-    } catch (e) {
-      throw Exception('Ошибка сохранения: $e');
+    } catch (error) {
+      throw ImageSaveException(
+        message: 'Failed to save image to gallery: $error',
+        originalError: error,
+      );
     }
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
@@ -15,6 +14,8 @@ import 'providers/selected_items_provider.dart';
 import 'providers/locale_provider.dart';
 import 'services/sound_service.dart';
 import 'l10n/app_localizations.dart';
+import 'config/app_theme.dart';
+import 'constants/app_constants.dart';
 
 // GlobalKey для иконки корзины (используется для flying animation)
 final GlobalKey cartIconKey = GlobalKey();
@@ -27,8 +28,8 @@ void main() async {
 
   // Initialize Hive for local storage
   await Hive.initFlutter();
-  await Hive.openBox('wardrobe');
-  await Hive.openBox('settings');
+  await Hive.openBox(AppConstants.hiveBoxWardrobe);
+  await Hive.openBox(AppConstants.hiveBoxSettings);
 
   // Initialize sound service
   await SoundService().initialize();
@@ -58,8 +59,8 @@ class VirtualTryOnApp extends ConsumerWidget {
       title: 'Virtual Try-On',
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
-      theme: _buildLightTheme(),
-      darkTheme: _buildDarkTheme(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       locale: locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -71,97 +72,11 @@ class VirtualTryOnApp extends ConsumerWidget {
         Locale('en'),
         Locale('ru'),
       ],
-      initialRoute: '/login',
+      initialRoute: AppConstants.routeLogin,
       routes: {
-        '/login': (context) => const LoginScreen(),
-        '/home': (context) => const MainNavigator(),
+        AppConstants.routeLogin: (context) => const LoginScreen(),
+        AppConstants.routeHome: (context) => const MainNavigator(),
       },
-    );
-  }
-
-  ThemeData _buildLightTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.light,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF2563EB),
-        brightness: Brightness.light,
-      ),
-      textTheme: GoogleFonts.interTextTheme(),
-      cardTheme: const CardThemeData(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          elevation: 2,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Colors.grey[100],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
-        ),
-      ),
-    );
-  }
-
-  ThemeData _buildDarkTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF3B82F6),
-        brightness: Brightness.dark,
-      ),
-      textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
-      cardTheme: const CardThemeData(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          elevation: 2,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: const Color(0xFF374151),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
-        ),
-      ),
     );
   }
 }
@@ -173,6 +88,7 @@ class MainNavigator extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = ref.watch(navigationIndexProvider);
     final selectedItemsCount = ref.watch(selectedItemsProvider).length;
+    final l10n = AppLocalizations.of(context)!;
 
     final List<Widget> screens = [
       const HomeScreen(),
@@ -207,22 +123,22 @@ class MainNavigator extends ConsumerWidget {
               isLabelVisible: selectedItemsCount > 0,
               child: const Icon(Icons.home),
             ),
-            label: 'Главная',
+            label: l10n.navHome,
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.checkroom_outlined),
-            selectedIcon: Icon(Icons.checkroom),
-            label: 'Гардероб',
+          NavigationDestination(
+            icon: const Icon(Icons.checkroom_outlined),
+            selectedIcon: const Icon(Icons.checkroom),
+            label: l10n.navWardrobe,
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.store_outlined),
-            selectedIcon: Icon(Icons.store),
-            label: 'Магазины',
+          NavigationDestination(
+            icon: const Icon(Icons.store_outlined),
+            selectedIcon: const Icon(Icons.store),
+            label: l10n.navShops,
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Настройки',
+          NavigationDestination(
+            icon: const Icon(Icons.settings_outlined),
+            selectedIcon: const Icon(Icons.settings),
+            label: l10n.navSettings,
           ),
         ],
       ),

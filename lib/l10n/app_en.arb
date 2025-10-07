@@ -56,5 +56,18 @@
   "tryOnComplete": "Try-on complete!",
   "errorOccurred": "An error occurred",
   "googleSignInStub": "Sign in with Google (stub)",
-  "appleSignInStub": "Sign in with Apple (stub)"
+  "appleSignInStub": "Sign in with Apple (stub)",
+
+  "navHome": "Home",
+  "navWardrobe": "Wardrobe",
+  "navShops": "Shops",
+  "navSettings": "Settings",
+
+  "loadingMagicInProgress": "Magic in progress...",
+  "pickingYourNewLook": "Picking your new look!",
+  "generateOrUploadModel": "Generate a model or upload a photo",
+  "enterDescriptionOrPress": "Enter description in the field below or press the button",
+
+  "wardrobeEmpty": "Wardrobe is empty",
+  "addClothesToStart": "Add clothes to get started"
 }

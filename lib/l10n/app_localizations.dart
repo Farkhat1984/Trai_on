@@ -361,6 +361,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in with Apple (stub)'**
   String get appleSignInStub;
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navWardrobe.
+  ///
+  /// In en, this message translates to:
+  /// **'Wardrobe'**
+  String get navWardrobe;
+
+  /// No description provided for @navShops.
+  ///
+  /// In en, this message translates to:
+  /// **'Shops'**
+  String get navShops;
+
+  /// No description provided for @navSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get navSettings;
+
+  /// No description provided for @loadingMagicInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Magic in progress...'**
+  String get loadingMagicInProgress;
+
+  /// No description provided for @pickingYourNewLook.
+  ///
+  /// In en, this message translates to:
+  /// **'Picking your new look!'**
+  String get pickingYourNewLook;
+
+  /// No description provided for @generateOrUploadModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate a model or upload a photo'**
+  String get generateOrUploadModel;
+
+  /// No description provided for @enterDescriptionOrPress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter description in the field below or press the button'**
+  String get enterDescriptionOrPress;
+
+  /// No description provided for @wardrobeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Wardrobe is empty'**
+  String get wardrobeEmpty;
+
+  /// No description provided for @addClothesToStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Add clothes to get started'**
+  String get addClothesToStart;
 }
 
 class _AppLocalizationsDelegate

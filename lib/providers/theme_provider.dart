@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '../constants/app_constants.dart';
 
 final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
   return ThemeModeNotifier();
@@ -12,15 +13,15 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   }
 
   Future<void> _loadThemeMode() async {
-    final box = Hive.box('settings');
-    final themeModeString = box.get('themeMode', defaultValue: 'system');
+    final box = Hive.box(AppConstants.hiveBoxSettings);
+    final themeModeString = box.get(AppConstants.settingsKeyThemeMode, defaultValue: 'system');
     state = _themeModeFromString(themeModeString);
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
     state = mode;
-    final box = Hive.box('settings');
-    await box.put('themeMode', _themeModeToString(mode));
+    final box = Hive.box(AppConstants.hiveBoxSettings);
+    await box.put(AppConstants.settingsKeyThemeMode, _themeModeToString(mode));
   }
 
   ThemeMode _themeModeFromString(String value) {

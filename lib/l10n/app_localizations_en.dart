@@ -142,4 +142,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appleSignInStub => 'Sign in with Apple (stub)';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navWardrobe => 'Wardrobe';
+
+  @override
+  String get navShops => 'Shops';
+
+  @override
+  String get navSettings => 'Settings';
+
+  @override
+  String get loadingMagicInProgress => 'Magic in progress...';
+
+  @override
+  String get pickingYourNewLook => 'Picking your new look!';
+
+  @override
+  String get generateOrUploadModel => 'Generate a model or upload a photo';
+
+  @override
+  String get enterDescriptionOrPress =>
+      'Enter description in the field below or press the button';
+
+  @override
+  String get wardrobeEmpty => 'Wardrobe is empty';
+
+  @override
+  String get addClothesToStart => 'Add clothes to get started';
 }

@@ -53,5 +53,18 @@
   "tryOnComplete": "Примерка завершена!",
   "errorOccurred": "Произошла ошибка",
   "googleSignInStub": "Вход через Google (заглушка)",
-  "appleSignInStub": "Вход через Apple (заглушка)"
+  "appleSignInStub": "Вход через Apple (заглушка)",
+
+  "navHome": "Главная",
+  "navWardrobe": "Гардероб",
+  "navShops": "Магазины",
+  "navSettings": "Настройки",
+
+  "loadingMagicInProgress": "Магия в процессе...",
+  "pickingYourNewLook": "Подбираем ваш новый образ!",
+  "generateOrUploadModel": "Сгенерируйте модель или загрузите фото",
+  "enterDescriptionOrPress": "Введите описание в поле ниже или нажмите кнопку",
+
+  "wardrobeEmpty": "Гардероб пуст",
+  "addClothesToStart": "Добавьте одежду, чтобы начать"
 }

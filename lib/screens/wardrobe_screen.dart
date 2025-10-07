@@ -9,7 +9,8 @@ import '../providers/fab_state_provider.dart';
 import '../services/image_service.dart';
 import '../services/api_service.dart';
 import '../services/sound_service.dart';
-import '../widgets/sound_buttons.dart';
+import '../widgets/common/expandable_fab.dart';
+import '../constants/app_colors.dart';
 import '../models/clothing_item.dart';
 import '../widgets/clothing_card_widget.dart';
 import 'dart:convert' show base64Decode;
@@ -240,14 +241,34 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
       floatingActionButton: Consumer(
         builder: (context, ref, _) {
           final isFabOpen = ref.watch(fabStateProvider);
-          return _WardrobeFAB(
-            isFabOpen: isFabOpen,
-            onAIPressed: _showGenerateDialog,
-            onCameraPressed: _showCameraOptions,
-            onUploadPressed: _pickClothingImages,
-            onToggleFAB: () {
+
+          final actions = <FabAction>[
+            FabAction(
+              heroTag: 'ai',
+              backgroundColor: AppColors.fabAI,
+              icon: Icons.auto_awesome,
+              onPressed: _showGenerateDialog,
+            ),
+            FabAction(
+              heroTag: 'camera',
+              backgroundColor: AppColors.fabCamera,
+              icon: Icons.camera_alt,
+              onPressed: _showCameraOptions,
+            ),
+            FabAction(
+              heroTag: 'upload',
+              backgroundColor: AppColors.fabUpload,
+              icon: Icons.photo_library,
+              onPressed: _pickClothingImages,
+            ),
+          ];
+
+          return ExpandableFab(
+            isExpanded: isFabOpen,
+            onToggle: () {
               ref.read(fabStateProvider.notifier).state = !isFabOpen;
             },
+            actions: actions,
           );
         },
       ),
@@ -384,91 +405,5 @@ class _ProcessingOverlay extends StatelessWidget {
         child: CircularProgressIndicator(),
       ),
     );
-  }
-}
-
-// Виджет FAB с кнопками
-class _WardrobeFAB extends StatelessWidget {
-  final bool isFabOpen;
-  final VoidCallback onAIPressed;
-  final VoidCallback onCameraPressed;
-  final VoidCallback onUploadPressed;
-  final VoidCallback onToggleFAB;
-
-  const _WardrobeFAB({
-    required this.isFabOpen,
-    required this.onAIPressed,
-    required this.onCameraPressed,
-    required this.onUploadPressed,
-    required this.onToggleFAB,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (isFabOpen) ...[
-          _FABButton(
-            heroTag: 'ai',
-            backgroundColor: Colors.purple,
-            icon: Icons.auto_awesome,
-            onPressed: onAIPressed,
-          ),
-          const SizedBox(height: 12),
-          _FABButton(
-            heroTag: 'camera',
-            backgroundColor: Colors.blue,
-            icon: Icons.camera_alt,
-            onPressed: onCameraPressed,
-          ),
-          const SizedBox(height: 12),
-          _FABButton(
-            heroTag: 'upload',
-            backgroundColor: Colors.green,
-            icon: Icons.photo_library,
-            onPressed: onUploadPressed,
-          ),
-          const SizedBox(height: 12),
-        ],
-        SoundFloatingActionButton(
-          onPressed: onToggleFAB,
-          child: AnimatedRotation(
-            turns: isFabOpen ? 0.125 : 0,
-            duration: const Duration(milliseconds: 200),
-            child: Icon(isFabOpen ? Icons.close : Icons.add),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// Маленькая кнопка FAB
-class _FABButton extends StatelessWidget {
-  final String heroTag;
-  final Color backgroundColor;
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  const _FABButton({
-    required this.heroTag,
-    required this.backgroundColor,
-    required this.icon,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SoundFloatingActionButton(
-      heroTag: heroTag,
-      mini: true,
-      backgroundColor: backgroundColor,
-      onPressed: onPressed,
-      child: Icon(icon, color: Colors.white),
-    ).animate().fadeIn(duration: 200.ms).scale(
-          begin: const Offset(0.5, 0.5),
-          duration: 200.ms,
-        );
   }
 }

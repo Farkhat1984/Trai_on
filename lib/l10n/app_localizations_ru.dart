@@ -142,4 +142,35 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get appleSignInStub => 'Вход через Apple (заглушка)';
+
+  @override
+  String get navHome => 'Главная';
+
+  @override
+  String get navWardrobe => 'Гардероб';
+
+  @override
+  String get navShops => 'Магазины';
+
+  @override
+  String get navSettings => 'Настройки';
+
+  @override
+  String get loadingMagicInProgress => 'Магия в процессе...';
+
+  @override
+  String get pickingYourNewLook => 'Подбираем ваш новый образ!';
+
+  @override
+  String get generateOrUploadModel => 'Сгенерируйте модель или загрузите фото';
+
+  @override
+  String get enterDescriptionOrPress =>
+      'Введите описание в поле ниже или нажмите кнопку';
+
+  @override
+  String get wardrobeEmpty => 'Гардероб пуст';
+
+  @override
+  String get addClothesToStart => 'Добавьте одежду, чтобы начать';
 }

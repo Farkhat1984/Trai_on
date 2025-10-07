@@ -13,7 +13,8 @@ import '../services/sound_service.dart';
 import '../widgets/person_display_widget.dart';
 import '../widgets/loading_overlay.dart';
 import '../widgets/celebrate_overlay.dart';
-import '../widgets/sound_buttons.dart';
+import '../widgets/common/expandable_fab.dart';
+import '../constants/app_colors.dart';
 import '../models/clothing_item.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -362,18 +363,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       floatingActionButton: Consumer(
         builder: (context, ref, _) {
           final isFabOpen = ref.watch(fabStateProvider);
-          return _HomeFAB(
-            isFabOpen: isFabOpen,
-            hasPersonImage: personState.base64Image != null,
-            onDeletePressed: _deletePersonImage,
-            onSavePressed: _saveToGallery,
-            onSharePressed: _shareImage,
-            onAIPressed: _showGeneratePersonDialog,
-            onCameraPressed: _showCameraOptions,
-            onUploadPressed: _pickPersonImage,
-            onToggleFAB: () {
+          final hasPersonImage = personState.base64Image != null;
+
+          final actions = <FabAction>[
+            if (hasPersonImage) ...[
+              FabAction(
+                heroTag: 'delete',
+                backgroundColor: AppColors.fabDelete,
+                icon: Icons.delete_outline,
+                onPressed: _deletePersonImage,
+              ),
+              FabAction(
+                heroTag: 'save',
+                backgroundColor: AppColors.fabSave,
+                icon: Icons.save_alt,
+                onPressed: _saveToGallery,
+              ),
+              FabAction(
+                heroTag: 'share',
+                backgroundColor: AppColors.fabShare,
+                icon: Icons.share,
+                onPressed: _shareImage,
+              ),
+            ],
+            FabAction(
+              heroTag: 'ai',
+              backgroundColor: AppColors.fabAI,
+              icon: Icons.auto_awesome,
+              onPressed: _showGeneratePersonDialog,
+            ),
+            FabAction(
+              heroTag: 'camera',
+              backgroundColor: AppColors.fabCamera,
+              icon: Icons.camera_alt,
+              onPressed: _showCameraOptions,
+            ),
+            FabAction(
+              heroTag: 'upload',
+              backgroundColor: AppColors.fabUpload,
+              icon: Icons.photo_library,
+              onPressed: _pickPersonImage,
+            ),
+          ];
+
+          return ExpandableFab(
+            isExpanded: isFabOpen,
+            onToggle: () {
               ref.read(fabStateProvider.notifier).state = !isFabOpen;
             },
+            actions: actions,
           );
         },
       ),
@@ -498,122 +536,5 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
       ),
     );
-  }
-}
-
-// Виджет FAB для главного экрана
-class _HomeFAB extends StatelessWidget {
-  final bool isFabOpen;
-  final bool hasPersonImage;
-  final VoidCallback onDeletePressed;
-  final VoidCallback onSavePressed;
-  final VoidCallback onSharePressed;
-  final VoidCallback onAIPressed;
-  final VoidCallback onCameraPressed;
-  final VoidCallback onUploadPressed;
-  final VoidCallback onToggleFAB;
-
-  const _HomeFAB({
-    required this.isFabOpen,
-    required this.hasPersonImage,
-    required this.onDeletePressed,
-    required this.onSavePressed,
-    required this.onSharePressed,
-    required this.onAIPressed,
-    required this.onCameraPressed,
-    required this.onUploadPressed,
-    required this.onToggleFAB,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (isFabOpen) ...[
-          if (hasPersonImage) ...[
-            _HomeFABButton(
-              heroTag: 'delete',
-              backgroundColor: Colors.red,
-              icon: Icons.delete_outline,
-              onPressed: onDeletePressed,
-            ),
-            const SizedBox(height: 12),
-            _HomeFABButton(
-              heroTag: 'save',
-              backgroundColor: Colors.orange,
-              icon: Icons.save_alt,
-              onPressed: onSavePressed,
-            ),
-            const SizedBox(height: 12),
-            _HomeFABButton(
-              heroTag: 'share',
-              backgroundColor: Colors.teal,
-              icon: Icons.share,
-              onPressed: onSharePressed,
-            ),
-            const SizedBox(height: 12),
-          ],
-          _HomeFABButton(
-            heroTag: 'ai',
-            backgroundColor: Colors.purple,
-            icon: Icons.auto_awesome,
-            onPressed: onAIPressed,
-          ),
-          const SizedBox(height: 12),
-          _HomeFABButton(
-            heroTag: 'camera',
-            backgroundColor: Colors.blue,
-            icon: Icons.camera_alt,
-            onPressed: onCameraPressed,
-          ),
-          const SizedBox(height: 12),
-          _HomeFABButton(
-            heroTag: 'upload',
-            backgroundColor: Colors.green,
-            icon: Icons.photo_library,
-            onPressed: onUploadPressed,
-          ),
-          const SizedBox(height: 12),
-        ],
-        SoundFloatingActionButton(
-          onPressed: onToggleFAB,
-          child: AnimatedRotation(
-            turns: isFabOpen ? 0.125 : 0,
-            duration: const Duration(milliseconds: 200),
-            child: Icon(isFabOpen ? Icons.close : Icons.add),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// Маленькая кнопка FAB для главного экрана
-class _HomeFABButton extends StatelessWidget {
-  final String heroTag;
-  final Color backgroundColor;
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  const _HomeFABButton({
-    required this.heroTag,
-    required this.backgroundColor,
-    required this.icon,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SoundFloatingActionButton(
-      heroTag: heroTag,
-      mini: true,
-      backgroundColor: backgroundColor,
-      onPressed: onPressed,
-      child: Icon(icon, color: Colors.white),
-    ).animate().fadeIn(duration: 200.ms).scale(
-          begin: const Offset(0.5, 0.5),
-          duration: 200.ms,
-        );
   }
 }
